@@ -41,10 +41,17 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/health || exit 1']
+      # Use Node's built-in fetch (Node 20+) instead of wget — busybox wget on
+      # node:20-alpine returns inconsistent exit codes for HTTP errors, which
+      # makes the container flap between healthy/unhealthy. fetch() is reliable
+      # and ships with Node.
+      test:
+        - CMD-SHELL
+        - node -e "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
       interval: 15s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   web:
     # Builds the static bundle and copies it into the shared web-static volume.
