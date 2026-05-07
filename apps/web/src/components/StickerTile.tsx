@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import clsx from 'clsx';
 import { categoryForSticker, PALETTE } from '@cromos/shared';
+import { useT } from '../i18n/LangContext';
 
 interface Props {
   number: number;
@@ -18,6 +19,7 @@ interface Props {
  *  - duplicate: owned + orange ×N badge ribbon (handled via .dup CSS in index.css)
  */
 export function StickerTile({ number, count, onTap, onLongPress }: Props) {
+  const { t } = useT();
   const cat = categoryForSticker(number);
   const teamColor = PALETTE[cat.colorKey];
   const isOwned = count > 0;
@@ -51,9 +53,16 @@ export function StickerTile({ number, count, onTap, onLongPress }: Props) {
     }
   };
 
-  const ariaLabel = `Sticker #${number}, ${cat.name}, ${
-    !isOwned ? 'missing' : isDup ? `owned ${count} copies` : 'owned'
-  }`;
+  const status = !isOwned
+    ? t('sticker.aria.missing')
+    : isDup
+      ? t('sticker.aria.owned_n', { n: count })
+      : t('sticker.aria.owned');
+  const ariaLabel = t('sticker.aria.label', {
+    n: number,
+    category: t(`category.${cat.id}`),
+    status,
+  });
 
   return (
     <button

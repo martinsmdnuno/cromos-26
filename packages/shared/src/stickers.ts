@@ -53,7 +53,8 @@ const PALETTE_KEYS: PaletteKey[] = [
 
 /**
  * 48 teams in Panini's official album order, paired with their flag emoji.
- * Positions 1–45 confirmed; positions 46–48 placeholders pending physical album.
+ * Order: Mexico → … → England → Croatia → Ghana → Panama (positions 46–48 confirmed
+ * via the wiki's CRO/GHA/PAN section codes).
  *
  * Scotland and England use the regional UN flag glyphs (🏴󠁧󠁢󠁳󠁣󠁴󠁿 / 🏴󠁧󠁢󠁥󠁮󠁧󠁿) — not all
  * platforms render those, so they may show as ⚫ on Windows. That's a system-level
@@ -105,11 +106,9 @@ const TEAMS_48: { name: string; emoji: string }[] = [
   { name: 'Uzbekistan', emoji: '🇺🇿' },
   { name: 'Colombia', emoji: '🇨🇴' },
   { name: 'England', emoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
-  // Positions 46–48 — placeholders, edit when album is physically in hand.
-  // Use ⚽ as fallback emoji until the team is identified.
-  { name: 'Team 46', emoji: '⚽' },
-  { name: 'Team 47', emoji: '⚽' },
-  { name: 'Team 48', emoji: '⚽' },
+  { name: 'Croatia', emoji: '🇭🇷' },
+  { name: 'Ghana', emoji: '🇬🇭' },
+  { name: 'Panama', emoji: '🇵🇦' },
 ];
 
 function buildCategories(): CategoryDef[] {

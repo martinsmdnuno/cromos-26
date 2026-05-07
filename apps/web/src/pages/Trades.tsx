@@ -134,12 +134,12 @@ function ResultPanel({
 }) {
   const { t } = useT();
   const groups = useMemo(() => {
-    const out = new Map<string, { name: string; emoji: string; nums: number[] }>();
+    const out = new Map<string, { id: string; emoji: string; nums: number[] }>();
     for (const n of numbers) {
       const cat = categoryForSticker(n);
       let g = out.get(cat.id);
       if (!g) {
-        g = { name: cat.name, emoji: cat.emoji, nums: [] };
+        g = { id: cat.id, emoji: cat.emoji, nums: [] };
         out.set(cat.id, g);
       }
       g.nums.push(n);
@@ -163,10 +163,10 @@ function ResultPanel({
       )}
       <div className="space-y-2">
         {groups.map((g) => (
-          <div key={g.name}>
+          <div key={g.id}>
             <div className="label-mono opacity-70 mb-1 flex items-center gap-1">
               <span aria-hidden="true">{g.emoji}</span>
-              <span>{g.name}</span>
+              <span>{t(`category.${g.id}`)}</span>
             </div>
             <div className="flex flex-wrap gap-1">
               {g.nums.map((n) => (

@@ -106,7 +106,7 @@ export function Stats() {
                 {c.emoji}
               </span>
               <span className="font-semibold text-[13px] truncate" style={{ width: 96 }}>
-                {c.name}
+                {t(`category.${c.id}`)}
               </span>
               <div className="flex-1 h-2 bg-panini-cream border border-panini-ink rounded overflow-hidden">
                 <div className="h-full" style={{ width: `${pct}%`, background: color }} />

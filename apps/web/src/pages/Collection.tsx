@@ -207,6 +207,7 @@ function CategorySection({
   onTap: (n: number, next: number) => void;
   onLongPress: (n: number) => void;
 }) {
+  const { t } = useT();
   const ownedCount = (() => {
     let n = 0;
     for (let s = cat.range[0]; s <= cat.range[1]; s++) if ((collection[s] ?? 0) > 0) n++;
@@ -222,7 +223,9 @@ function CategorySection({
         <span className="text-xl leading-none" aria-hidden="true">
           {cat.emoji}
         </span>
-        <h3 className="font-display text-lg tracking-wide uppercase">{cat.name}</h3>
+        <h3 className="font-display text-lg tracking-wide uppercase">
+          {t(`category.${cat.id}`)}
+        </h3>
         <span className="ml-auto label-mono opacity-60">
           {ownedCount}/{total}
         </span>
