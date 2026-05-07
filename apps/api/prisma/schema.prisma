@@ -1,0 +1,66 @@
+// Cromos 26 — database schema
+// Run `pnpm --filter @cromos/api prisma:migrate` to create migrations.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  stickers      UserSticker[]
+  memberships   GroupMembership[]
+  createdGroups Group[]           @relation("GroupCreator")
+}
+
+model UserSticker {
+  userId        String
+  stickerNumber Int
+  count         Int      @default(0)
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, stickerNumber])
+  @@index([userId])
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy   User              @relation("GroupCreator", fields: [createdById], references: [id])
+  memberships GroupMembership[]
+
+  @@index([code])
+}
+
+model GroupMembership {
+  id       String   @id @default(cuid())
+  groupId  String
+  userId   String
+  joinedAt DateTime @default(now())
+  /// Stable color index (0..7) inside the group, mapped to MEMBER_COLOR_CYCLE.
+  colorIdx Int
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@index([groupId])
+}
