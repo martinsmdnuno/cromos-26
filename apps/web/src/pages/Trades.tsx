@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
-import { categoryForSticker } from '@cromos/shared';
+import { categoryForSticker, stickerLabel } from '@cromos/shared';
 import { useAuth } from '../hooks/useAuth';
 import { useT } from '../i18n/LangContext';
 
@@ -175,7 +175,7 @@ function ResultPanel({
                   className="font-mono text-[10px] font-bold border border-panini-ink rounded px-1.5 py-0.5"
                   style={{ background: color, color: '#1A1A1A' }}
                 >
-                  #{n}
+                  {stickerLabel(n)}
                 </span>
               ))}
             </div>

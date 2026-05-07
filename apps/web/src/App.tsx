@@ -8,6 +8,7 @@ import { Groups } from './pages/Groups';
 import { GroupDetail } from './pages/GroupDetail';
 import { Trades } from './pages/Trades';
 import { Stats } from './pages/Stats';
+import { Legal } from './pages/Legal';
 
 export function App() {
   return (
@@ -36,6 +37,10 @@ function AppRoutes() {
   if (!user) {
     return (
       <Routes>
+        {/* Legal pages are public — they are linked from the onboarding screen and
+            crawlers (Google, Apple) need to fetch them without an account. */}
+        <Route path="/legal/terms" element={<Legal kind="terms" />} />
+        <Route path="/legal/privacy" element={<Legal kind="privacy" />} />
         <Route path="*" element={<Onboarding />} />
       </Routes>
     );
@@ -50,6 +55,8 @@ function AppRoutes() {
         <Route path="/groups/:id" element={<GroupDetail />} />
         <Route path="/trades" element={<Trades />} />
         <Route path="/stats" element={<Stats />} />
+        <Route path="/legal/terms" element={<Legal kind="terms" />} />
+        <Route path="/legal/privacy" element={<Legal kind="privacy" />} />
         <Route path="*" element={<Navigate to="/collection" replace />} />
       </Route>
     </Routes>

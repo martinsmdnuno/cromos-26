@@ -1,12 +1,47 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CATEGORIES, PALETTE, TOTAL_STICKERS, type CategoryDef } from '@cromos/shared';
+import {
+  CATEGORIES,
+  PALETTE,
+  stickerMatchesQuery,
+  TOTAL_STICKERS,
+  type CategoryDef,
+} from '@cromos/shared';
 import { api } from '../api';
 import { StickerTile } from '../components/StickerTile';
 import { CountEditor } from '../components/CountEditor';
+import { PackModal } from '../components/PackModal';
 import { useT } from '../i18n/LangContext';
 
-type Filter = 'all' | 'owned' | 'missing' | 'duplicates';
+type Filter = 'all' | 'owned' | 'missing' | 'duplicates' | 'almost';
+
+/** ≥70% complete and not done yet — "almost there, push to finish" view. */
+const ALMOST_THRESHOLD = 0.7;
+const PREFS_KEY = 'cromos.collection.prefs.v1';
+
+interface Prefs {
+  filter: Filter;
+  team: string; // '' = all teams, otherwise CategoryDef.id
+}
+
+function loadPrefs(): Prefs {
+  if (typeof window === 'undefined') return { filter: 'all', team: '' };
+  try {
+    const raw = window.localStorage.getItem(PREFS_KEY);
+    if (!raw) return { filter: 'all', team: '' };
+    const p = JSON.parse(raw) as Partial<Prefs>;
+    const filter: Filter =
+      p.filter === 'owned' ||
+      p.filter === 'missing' ||
+      p.filter === 'duplicates' ||
+      p.filter === 'almost'
+        ? p.filter
+        : 'all';
+    return { filter, team: typeof p.team === 'string' ? p.team : '' };
+  } catch {
+    return { filter: 'all', team: '' };
+  }
+}
 
 export function Collection() {
   const qc = useQueryClient();
@@ -18,10 +53,33 @@ export function Collection() {
   });
   const collection: Record<number, number> = collectionQ.data?.collection ?? {};
 
-  const [filter, setFilter] = useState<Filter>('all');
+  const initialPrefs = useMemo(loadPrefs, []);
+  const [filter, setFilter] = useState<Filter>(initialPrefs.filter);
+  const [team, setTeam] = useState<string>(initialPrefs.team);
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<number | null>(null);
   const [bulkMode, setBulkMode] = useState(false);
+  const [packOpen, setPackOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(PREFS_KEY, JSON.stringify({ filter, team }));
+    } catch {
+      /* private mode etc. */
+    }
+  }, [filter, team]);
+
+  const almostCategoryIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const c of CATEGORIES) {
+      let owned = 0;
+      const total = c.range[1] - c.range[0] + 1;
+      for (let n = c.range[0]; n <= c.range[1]; n++) if ((collection[n] ?? 0) > 0) owned++;
+      const pct = owned / total;
+      if (pct >= ALMOST_THRESHOLD && pct < 1) ids.add(c.id);
+    }
+    return ids;
+  }, [collection]);
 
   const setSticker = useMutation({
     mutationFn: ({ number, count }: { number: number; count: number }) =>
@@ -65,13 +123,20 @@ export function Collection() {
     if (filter === 'owned') return c >= 1;
     if (filter === 'missing') return c === 0;
     if (filter === 'duplicates') return c >= 2;
+    // 'almost': category-level filter happens in `visibleCategories`; within those,
+    // surface only what is still missing — that's the actionable list.
+    if (filter === 'almost') return c === 0;
     return true;
   };
 
-  const matchesSearch = (n: number): boolean => {
-    if (!search.trim()) return true;
-    return String(n).includes(search.trim());
-  };
+  const matchesSearch = (n: number): boolean => stickerMatchesQuery(n, search);
+
+  const visibleCategories = useMemo(() => {
+    let cats = CATEGORIES;
+    if (team) cats = cats.filter((c) => c.id === team);
+    if (filter === 'almost') cats = cats.filter((c) => almostCategoryIds.has(c.id));
+    return cats;
+  }, [team, filter, almostCategoryIds]);
 
   const onTap = (n: number, next: number) => {
     setSticker.mutate({ number: n, count: next });
@@ -100,20 +165,19 @@ export function Collection() {
         />
       </div>
 
-      {/* Filter chips */}
-      <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar">
-        {(['all', 'owned', 'missing', 'duplicates'] as Filter[]).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`pill whitespace-nowrap ${filter === f ? 'pill-active' : ''}`}
-          >
-            {t(`collection.filter.${f}`)}
-          </button>
-        ))}
+      {/* Action row: open-a-pack + bulk toggle, sit before the filters so the
+          most rewarding action (adding stickers) is the first thing the eye lands on. */}
+      <div className="mt-3 flex gap-2">
+        <button
+          onClick={() => setPackOpen(true)}
+          className="pill !bg-panini-yellow flex-1 !py-2 font-bold flex items-center justify-center gap-1.5"
+        >
+          <span aria-hidden="true">📦</span>
+          <span>{t('collection.open_pack')}</span>
+        </button>
         <button
           onClick={() => setBulkMode((b) => !b)}
-          className={`pill whitespace-nowrap ml-auto ${bulkMode ? 'pill-active' : ''}`}
+          className={`pill whitespace-nowrap ${bulkMode ? 'pill-active' : ''}`}
           aria-pressed={bulkMode}
           title={t('collection.bulk_hint')}
         >
@@ -121,22 +185,68 @@ export function Collection() {
         </button>
       </div>
 
+      {/* Filter chips */}
+      <div className="mt-2 flex gap-2 overflow-x-auto no-scrollbar">
+        {(['all', 'owned', 'missing', 'duplicates', 'almost'] as Filter[]).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`pill whitespace-nowrap ${filter === f ? 'pill-active' : ''}`}
+            title={f === 'almost' ? t('collection.filter.almost_hint') : undefined}
+          >
+            {t(`collection.filter.${f}`)}
+          </button>
+        ))}
+      </div>
+
+      {/* Team picker + search row */}
+      <div className="mt-3 flex gap-2">
+        <label className="card flex items-center px-2 pl-3 pr-1 py-1 flex-1 min-w-0">
+          <span className="label-mono opacity-60 mr-2 shrink-0">
+            {t('collection.team_label')}
+          </span>
+          <select
+            value={team}
+            onChange={(e) => setTeam(e.target.value)}
+            className="flex-1 min-w-0 bg-transparent font-semibold text-[13px] focus:outline-none truncate"
+            aria-label={t('collection.team_aria')}
+          >
+            <option value="">{t('collection.team_all')}</option>
+            {CATEGORIES.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.emoji} {t(`category.${c.id}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       {/* Search */}
-      <div className="mt-3 card flex items-center gap-2 px-3 py-2">
+      <div className="mt-2 card flex items-center gap-2 px-3 py-2">
         <span aria-hidden="true">🔍</span>
         <input
-          inputMode="numeric"
+          inputMode="text"
+          autoCapitalize="characters"
           placeholder={t('collection.search_placeholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 bg-transparent font-mono text-[12px] focus:outline-none"
           aria-label={t('collection.search_aria')}
         />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            aria-label={t('collection.search_clear')}
+            className="label-mono opacity-60 hover:opacity-100"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {/* Categories */}
       <div className="mt-4 space-y-5">
-        {CATEGORIES.map((cat) => {
+        {visibleCategories.map((cat) => {
           const stickers: number[] = [];
           for (let n = cat.range[0]; n <= cat.range[1]; n++) {
             if (matchesFilter(n) && matchesSearch(n)) stickers.push(n);
@@ -156,6 +266,9 @@ export function Collection() {
             />
           );
         })}
+        {visibleCategories.length === 0 && (
+          <p className="text-sm opacity-60 px-1">{t('collection.no_results')}</p>
+        )}
       </div>
 
       {editing !== null && (
@@ -168,6 +281,10 @@ export function Collection() {
           }}
           onClose={() => setEditing(null)}
         />
+      )}
+
+      {packOpen && (
+        <PackModal collection={collection} onClose={() => setPackOpen(false)} />
       )}
     </div>
   );

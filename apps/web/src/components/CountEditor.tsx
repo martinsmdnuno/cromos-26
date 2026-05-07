@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { stickerLabel } from '@cromos/shared';
 import { useT } from '../i18n/LangContext';
 
 interface Props {
@@ -16,18 +17,19 @@ export function CountEditor({ number, count, onSave, onClose }: Props) {
   const { t } = useT();
   const [value, setValue] = useState(count);
   useEffect(() => setValue(count), [count]);
+  const label = stickerLabel(number);
 
   return (
     <div
       className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
-      aria-label={t('sticker.title', { n: number })}
+      aria-label={t('sticker.title', { n: label })}
       onClick={onClose}
     >
       <div className="card w-full max-w-sm p-5" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-2xl">{t('sticker.title', { n: number })}</h2>
+          <h2 className="font-display text-2xl">{t('sticker.title', { n: label })}</h2>
           <button
             className="label-mono text-panini-ink/70 hover:text-panini-ink"
             onClick={onClose}

@@ -1,9 +1,9 @@
-import { Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import { Logo } from './Logo';
 import { BottomTabBar, TopTabBar } from './TabBar';
-import { Avatar } from './Avatar';
+import { AvatarMenu } from './AvatarMenu';
 import { LangToggle } from './LangToggle';
-import { useAuth } from '../hooks/useAuth';
+import { useT } from '../i18n/LangContext';
 
 /**
  * Responsive shell:
@@ -12,7 +12,7 @@ import { useAuth } from '../hooks/useAuth';
  *  - tablet/desktop (>= 768px): wordmark + top tab bar in the header, no bottom bar.
  */
 export function Layout() {
-  const { user } = useAuth();
+  const { t } = useT();
   return (
     <div className="min-h-full bg-panini-cream flex flex-col">
       <header className="px-5 pt-3 pb-3 max-w-[800px] mx-auto w-full">
@@ -20,7 +20,7 @@ export function Layout() {
           <Logo />
           <div className="flex items-center gap-2">
             <LangToggle />
-            {user && <Avatar name={user.name} color="#7B4B9E" />}
+            <AvatarMenu />
           </div>
         </div>
         {/* Top tab bar only on tablet+ */}
@@ -32,6 +32,16 @@ export function Layout() {
       <main className="flex-1 max-w-[800px] mx-auto w-full pb-[calc(env(safe-area-inset-bottom)+96px)] md:pb-10">
         <Outlet />
       </main>
+
+      <footer className="hidden md:flex justify-center gap-4 pt-4 pb-6 label-mono opacity-50">
+        <Link to="/legal/terms" className="hover:opacity-100">
+          {t('menu.terms')}
+        </Link>
+        <span aria-hidden="true">·</span>
+        <Link to="/legal/privacy" className="hover:opacity-100">
+          {t('menu.privacy')}
+        </Link>
+      </footer>
 
       {/* Bottom tab bar only on mobile */}
       <BottomTabBar />

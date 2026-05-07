@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { type TradeSuggestion } from '@cromos/shared';
+import { stickerLabel, type TradeSuggestion } from '@cromos/shared';
 import { api } from '../api';
 import { Avatar } from '../components/Avatar';
 import { useAuth } from '../hooks/useAuth';
@@ -278,7 +278,7 @@ function TradeSide({
             className="font-mono text-[10px] font-bold border border-panini-ink rounded px-1.5 py-0.5"
             style={{ background: bg, color: '#1A1A1A' }}
           >
-            #{n}
+            {stickerLabel(n)}
           </span>
         ))}
         {extra > 0 && (

@@ -81,6 +81,13 @@ export interface CategoryDef {
    * Falls back to ⚽ if missing — every CategoryDef in the canonical config has one.
    */
   emoji: string;
+  /**
+   * Album label prefix shown on each tile inside the category, matching what Panini
+   * prints on the stickers themselves: `FWC` for the opening + FIFA Museum block
+   * (#2..#20), 3-letter FIFA codes for teams (`MEX`, `POR`, …). Sticker #1 is the
+   * Panini "00" foil and is special-cased in `stickerLabel`.
+   */
+  prefix: string;
 }
 
 export type PaletteKey =

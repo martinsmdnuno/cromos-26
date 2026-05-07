@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Trophy } from '../components/Trophy';
 import { LangToggle } from '../components/LangToggle';
@@ -167,6 +167,18 @@ export function Onboarding() {
           >
             {mode === 'signup' ? t('auth.have_account') : t('auth.no_account')}
           </button>
+
+          <p className="text-[11px] text-center opacity-60 leading-snug pt-1">
+            {t('legal.consent_lead')}{' '}
+            <Link to="/legal/terms" className="underline">
+              {t('menu.terms')}
+            </Link>{' '}
+            {t('legal.and')}{' '}
+            <Link to="/legal/privacy" className="underline">
+              {t('menu.privacy')}
+            </Link>
+            .
+          </p>
         </form>
       </div>
     </div>

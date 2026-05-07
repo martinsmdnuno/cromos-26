@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
-import { PALETTE, type PaletteKey } from '@cromos/shared';
-import { useAuth } from '../hooks/useAuth';
+import { PALETTE, stickerLabel, type PaletteKey } from '@cromos/shared';
 import { Trophy } from '../components/Trophy';
 import { useT } from '../i18n/LangContext';
 
@@ -25,7 +24,6 @@ interface StatsResponse {
 }
 
 export function Stats() {
-  const { logout } = useAuth();
   const { t } = useT();
   const q = useQuery({
     queryKey: ['stats'],
@@ -139,11 +137,6 @@ export function Stats() {
         </div>
       </a>
 
-      <div className="mt-6 flex justify-center">
-        <button onClick={() => logout()} className="pill text-panini-red border-panini-red">
-          {t('auth.sign_out')}
-        </button>
-      </div>
     </div>
   );
 }
@@ -174,7 +167,7 @@ function MissingList({ numbers }: { numbers: number[] }) {
   const { t } = useT();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const text = useMemo(() => numbers.join(', '), [numbers]);
+  const text = useMemo(() => numbers.map((n) => stickerLabel(n)).join(', '), [numbers]);
 
   return (
     <section className="mt-5">

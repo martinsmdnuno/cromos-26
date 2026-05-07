@@ -65,6 +65,11 @@
 /* Sticker tile — base layout, color comes via inline style for team. */
 .sticker-tile {
   aspect-ratio: 2 / 3;
+  /* manipulation = panning + pinch zoom only, no double-tap-zoom delay. Removes the
+     250–300ms tap latency that made fast tile entry feel mushy on iOS. */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
   @apply rounded-lg border-2 border-panini-ink relative flex items-center justify-center font-mono text-[10px] font-bold transition-transform;
 }
 .sticker-tile:active {
