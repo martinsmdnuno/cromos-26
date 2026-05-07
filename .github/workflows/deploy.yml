@@ -44,6 +44,6 @@ jobs:
             cd /home/${{ secrets.SSH_USER }}/cromos-26
             git fetch --all
             git reset --hard origin/main
-            docker compose -f docker-compose.prod.yml up -d --build
-            docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy
+            docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+            docker compose -f docker-compose.prod.yml --env-file .env.production exec -T api npx prisma migrate deploy
             docker image prune -f
