@@ -3,6 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+    <!-- iOS Safari ignores SVG favicons for "Add to Home Screen" — it requires a
+         180×180 PNG declared as apple-touch-icon. Without this it falls back to a
+         page screenshot, which on the cream background renders as a plain grey "C". -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Cromos 26" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#F5E6D3" />
     <meta name="description" content="Cromos 26 — track and trade your Panini FIFA World Cup 2026 sticker collection." />
