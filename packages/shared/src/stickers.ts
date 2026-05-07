@@ -1,29 +1,29 @@
 import type { CategoryDef, PaletteKey } from './types.js';
 
 /**
- * STICKER & TEAM CONFIG
- * =====================
- * The Panini FIFA World Cup 2026 sticker album has 744 stickers total.
- * The official sticker list isn't fully public yet; the structure below is a
- * best-guess layout that matches the "expanded 48-team" 2026 format and is
- * easy to update when Panini publishes the real list.
+ * STICKER & TEAM CONFIG — Panini FIFA World Cup 2026™ Official Sticker Collection
+ * ================================================================================
+ * Source: Panini America + checklistinsider.com (verified 2026-05-07).
  *
- * --- HOW TO UPDATE WHEN THE OFFICIAL LIST PUBLISHES ---
- *  1. Each section below is a `CategoryDef` with an inclusive [start, end] sticker range.
- *  2. The `colorKey` picks one of the 8 palette colors (see PALETTE) — that color drives
- *     the team's tile color, category-flag color, progress-bar color, and stats-row color
- *     across the entire UI. So changing it here updates every screen.
- *  3. Re-run `pnpm typecheck` — the assertion at the bottom of this file (TOTAL === 744)
- *     will fail with a clear error if your ranges overlap or don't cover all 744 stickers.
- *  4. No DB migration needed — categories are computed on the fly. Existing user data
- *     (sticker numbers + counts) is preserved.
+ * Total: 980 stickers (the largest WC album Panini has ever produced).
  *
- * Layout used here:
- *  - 1–20    Opening / Logos / FIFA mascot
- *  - 21–40   Stadiums (16 host stadiums across USA/Mexico/Canada)
- *  - 41–664  48 teams × 13 stickers each (1 team-header + 12 player + variants)
- *  - 665–714 Legends (50 historic players)
- *  - 715–744 Shiny Specials (golden moments, parallel inserts)
+ * Structure:
+ *  - #1            Panini logo foil (the "00" in Panini's own numbering)
+ *  - #2–9          Tournament intro (8 stickers — emblems, mascots, slogan, ball, hosts)
+ *  - #10–20        FIFA Museum (11 stickers — past WC champions, Italy 1934 → Argentina 2022)
+ *  - #21–980       48 teams × 20 stickers each
+ *                  Per team: 1 team crest foil + 1 team photo + 18 player portraits
+ *
+ * The 12 Coca-Cola exclusive stickers are NOT part of the base 980 set — they're a
+ * separate insert that ships in marked Coke bottles. We don't model them here.
+ *
+ * Team order matches Panini's official album layout (FIFA group order at print time).
+ *
+ * --- HOW TO UPDATE ---
+ * Each `CategoryDef` has an inclusive [start, end] range and a `colorKey` from the
+ * 8-color palette. The runtime sanity check at the bottom fails loudly if ranges
+ * overlap or don't sum to 980. No DB migration needed — categories are computed on
+ * the fly. Existing user data (sticker numbers + counts) is preserved.
  */
 
 export const PALETTE: Record<PaletteKey, string> = {
@@ -37,7 +37,7 @@ export const PALETTE: Record<PaletteKey, string> = {
   purple: '#7B4B9E',
 };
 
-export const TOTAL_STICKERS = 744;
+export const TOTAL_STICKERS = 980;
 
 const PALETTE_KEYS: PaletteKey[] = [
   'red',
@@ -50,78 +50,89 @@ const PALETTE_KEYS: PaletteKey[] = [
   'purple',
 ];
 
+/**
+ * 48 teams in the order Panini ships them in the official album.
+ *
+ * Positions 1–45 confirmed via the official checklist.
+ * Positions 46–48 are PLACEHOLDERS — the official album lists them but the precise
+ * order at the end was not in our source. Edit these names when you have the album
+ * physically in hand. The structure (20 stickers each) is correct regardless.
+ */
 const TEAMS_48 = [
-  'Canada',
   'Mexico',
-  'USA',
-  'Argentina',
-  'Brasil',
-  'Uruguai',
-  'Colômbia',
-  'Equador',
-  'Paraguai',
-  'França',
-  'Inglaterra',
-  'Alemanha',
-  'Espanha',
-  'Portugal',
-  'Itália',
-  'Países Baixos',
-  'Bélgica',
-  'Croácia',
-  'Suíça',
-  'Áustria',
-  'Dinamarca',
-  'Polónia',
-  'Sérvia',
-  'Turquia',
-  'Marrocos',
-  'Senegal',
-  'Tunísia',
-  'Argélia',
-  'Egito',
-  'Nigéria',
-  'Costa do Marfim',
-  'Camarões',
-  'Gana',
-  'Japão',
-  'Coreia do Sul',
-  'Austrália',
-  'Irão',
-  'Arábia Saudita',
+  'South Africa',
+  'South Korea',
+  'Czechia',
+  'Canada',
+  'Bosnia and Herzegovina',
   'Qatar',
-  'Iraque',
-  'Uzbequistão',
-  'Nova Zelândia',
-  'Costa Rica',
-  'Panamá',
-  'Jamaica',
-  'Chile',
-  'Peru',
-  'Bolívia',
+  'Switzerland',
+  'Brazil',
+  'Morocco',
+  'Haiti',
+  'Scotland',
+  'USA',
+  'Paraguay',
+  'Australia',
+  'Turkey',
+  'Germany',
+  'Curaçao',
+  'Ivory Coast',
+  'Ecuador',
+  'Netherlands',
+  'Japan',
+  'Sweden',
+  'Tunisia',
+  'Belgium',
+  'Egypt',
+  'Iran',
+  'New Zealand',
+  'Spain',
+  'Cape Verde',
+  'Saudi Arabia',
+  'Uruguay',
+  'France',
+  'Senegal',
+  'Iraq',
+  'Norway',
+  'Argentina',
+  'Algeria',
+  'Austria',
+  'Jordan',
+  'Portugal',
+  'Congo DR',
+  'Uzbekistan',
+  'Colombia',
+  'England',
+  // Positions 46–48 — placeholders, edit when album is physically in hand:
+  'Team 46',
+  'Team 47',
+  'Team 48',
 ];
 
-// Build the categories programmatically so the totals always sum cleanly.
 function buildCategories(): CategoryDef[] {
   const cats: CategoryDef[] = [];
 
+  // #1 — Panini logo foil (single sticker, treated as part of the opening).
+  // #2–9 — Tournament intro (emblems, mascots, slogan, ball, host countries).
   cats.push({
     id: 'opening',
     name: 'Opening / Logos',
     colorKey: 'red',
-    range: [1, 20],
+    range: [1, 9],
   });
 
+  // #10–20 — FIFA Museum (11 historical World Cup champions).
   cats.push({
-    id: 'stadiums',
-    name: 'Stadiums',
+    id: 'fifa-museum',
+    name: 'FIFA Museum',
     colorKey: 'navy',
-    range: [21, 40],
+    range: [10, 20],
   });
 
-  // 48 teams × 13 stickers = 624 stickers, range 41..664
-  let cursor = 41;
-  const stickersPerTeam = 13;
+  // #21–980 — 48 teams × 20 stickers each = 960 stickers.
+  let cursor = 21;
+  const stickersPerTeam = 20;
   for (let i = 0; i < 48; i++) {
     const start = cursor;
     const end = cursor + stickersPerTeam - 1;
@@ -134,26 +145,12 @@ function buildCategories(): CategoryDef[] {
     cursor = end + 1;
   }
 
-  cats.push({
-    id: 'legends',
-    name: 'Legends',
-    colorKey: 'purple',
-    range: [665, 714],
-  });
-
-  cats.push({
-    id: 'shiny-specials',
-    name: 'Shiny Specials',
-    colorKey: 'yellow',
-    range: [715, 744],
-  });
-
   return cats;
 }
 
 export const CATEGORIES: CategoryDef[] = buildCategories();
 
-// Compile-time-ish sanity check: ranges are contiguous and cover 1..744 exactly.
+// Sanity check: ranges are contiguous and cover 1..TOTAL_STICKERS exactly.
 (() => {
   let expected = 1;
   for (const c of CATEGORIES) {
@@ -180,7 +177,6 @@ export function categoryForSticker(num: number): CategoryDef {
   for (const c of CATEGORIES) {
     if (num >= c.range[0] && num <= c.range[1]) return c;
   }
-  // Should never happen given the sanity check above.
   throw new Error(`Sticker number ${num} is out of range 1..${TOTAL_STICKERS}`);
 }
 
@@ -192,7 +188,7 @@ export function categorySize(c: CategoryDef): number {
   return c.range[1] - c.range[0] + 1;
 }
 
-/** All sticker numbers in order, useful for rendering the full grid. */
+/** All sticker numbers in order. */
 export function allStickerNumbers(): number[] {
   const arr = new Array(TOTAL_STICKERS);
   for (let i = 0; i < TOTAL_STICKERS; i++) arr[i] = i + 1;

@@ -74,7 +74,7 @@ export function Onboarding() {
               <span className="text-panini-blue">6</span>
             </h1>
             <p className="mt-3 font-mono text-[12px] font-bold">
-              744 STICKERS · 48 TEAMS · ONE ALBUM
+              980 STICKERS · 48 TEAMS · ONE ALBUM
             </p>
           </div>
         </div>

@@ -1,7 +1,7 @@
 # Cromos 26
 
 A web app for managing your **Panini FIFA World Cup 2026 sticker collection** with friends.
-Track owned/missing/duplicate stickers across all 744 entries, share groups with friends via a
+Track owned/missing/duplicate stickers across all 980 entries, share groups with friends via a
 6-character invite code, and let the multi-trade optimizer surface the best balanced swaps.
 
 > Visual identity is directly inspired by the official album cover: cream backgrounds, primary-color
@@ -120,16 +120,24 @@ docker compose down -v                            # nuke local DB
 
 ## Updating the sticker / team list
 
-The official Panini sticker list isn't fully public yet. The current category/team mapping is a
-placeholder layout (48 teams × 13 stickers + opening + stadiums + legends + shiny specials =
-744 total). When the real list publishes, edit **one file**:
+The current layout in `packages/shared/src/stickers.ts` follows the **official Panini 2026
+album** (verified May 2026 against Panini America + checklist sources):
 
-- `packages/shared/src/stickers.ts`
+- `#1` Panini logo foil
+- `#2–9` Tournament intro (8 stickers — emblems, mascots, slogan, ball, hosts)
+- `#10–20` FIFA Museum (11 historical World Cup champions, Italy 1934 → Argentina 2022)
+- `#21–980` 48 teams × 20 stickers each (1 crest foil + 1 team photo + 18 players)
+
+**Total: 980 stickers.** The Coca-Cola exclusive 12-sticker insert is _not_ part of the base
+set and isn't tracked here.
+
+**Positions 46–48 of the team list are placeholders** — the official album lists those teams
+but my source didn't include the exact tail order. Edit those names in `stickers.ts` once you
+have the album physically in hand.
 
 Each `CategoryDef` has an inclusive `[start, end]` range and a `colorKey` from the 8-color
-palette. The file has a runtime sanity check that throws if your ranges overlap or don't sum
-to 744. No DB migration is required — categories are computed on the fly, so existing user data
-is preserved.
+palette. A runtime sanity check throws if ranges overlap or don't sum to 980. No DB migration
+is required — categories are computed on the fly, so existing user data is preserved.
 
 ---
 
