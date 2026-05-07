@@ -182,7 +182,7 @@
     padding: 0 20px 12px;
     display: flex;
     gap: 6px;
-    overflow-x: auto;
+    flex-wrap: wrap;
   }
   .chip {
     padding: 6px 12px;
@@ -194,6 +194,51 @@
     white-space: nowrap;
   }
   .chip.active { background: var(--panini-ink); color: #fff; }
+  /* action row: open-a-pack CTA + bulk toggle */
+  .action-row {
+    padding: 0 20px 8px;
+    display: flex;
+    gap: 8px;
+  }
+  .pack-cta {
+    flex: 1;
+    background: var(--panini-yellow);
+    border: 2px solid var(--panini-ink);
+    border-radius: 999px;
+    padding: 8px 14px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--panini-ink);
+  }
+  .action-row .chip {
+    padding: 8px 14px;
+  }
+  /* team picker */
+  .team-row {
+    margin: 0 20px 10px;
+    background: #fff;
+    border: 2px solid var(--panini-ink);
+    border-radius: 12px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .team-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    color: var(--panini-ink);
+    opacity: 0.6;
+  }
+  .team-value {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--panini-ink);
+  }
   /* search */
   .search {
     margin: 0 20px 12px;
@@ -220,6 +265,10 @@
     height: 24px;
     background: var(--panini-red);
     border-radius: 2px;
+  }
+  .category-emoji {
+    font-size: 18px;
+    line-height: 1;
   }
   .category-name {
     font-family: 'Anton', sans-serif;
@@ -334,54 +383,67 @@
         </div>
 
         <div class="stats-strip">
-          <div class="stat"><div class="num">347</div><div class="lbl">Owned</div></div>
-          <div class="stat"><div class="num">397</div><div class="lbl">Missing</div></div>
-          <div class="stat"><div class="num">52</div><div class="lbl">Dups</div></div>
+          <div class="stat"><div class="num">462</div><div class="lbl">Owned</div></div>
+          <div class="stat"><div class="num">518</div><div class="lbl">Missing</div></div>
+          <div class="stat"><div class="num">68</div><div class="lbl">Dups</div></div>
           <div class="stat complete"><div class="num">47%</div><div class="lbl">Done</div></div>
         </div>
 
         <div class="progress"><div class="progress-fill"></div></div>
+
+        <div class="action-row">
+          <div class="pack-cta">📦 Open a pack</div>
+          <div class="chip">Bulk</div>
+        </div>
 
         <div class="chips">
           <div class="chip active">All</div>
           <div class="chip">Owned</div>
           <div class="chip">Missing</div>
           <div class="chip">Duplicates</div>
+          <div class="chip">Almost done</div>
         </div>
 
-        <div class="search">🔍 Search sticker number...</div>
+        <div class="team-row">
+          <span class="team-label">TEAM</span>
+          <span class="team-value">All teams ▾</span>
+        </div>
+
+        <div class="search">🔍 Search by code or number (e.g. POR3, FWC14, 245)</div>
 
         <div class="category-header">
           <div class="category-flag" style="background: var(--panini-red)"></div>
+          <div class="category-emoji">🇵🇹</div>
           <div class="category-name">PORTUGAL</div>
           <div class="category-count">12/20</div>
         </div>
 
         <div class="stickers">
-          <div class="sticker owned">91</div>
-          <div class="sticker owned">92</div>
-          <div class="sticker owned dup">93</div>
-          <div class="sticker missing">94</div>
-          <div class="sticker owned">95</div>
-          <div class="sticker owned">96</div>
-          <div class="sticker missing">97</div>
-          <div class="sticker owned dup">98</div>
-          <div class="sticker owned">99</div>
-          <div class="sticker missing">100</div>
+          <div class="sticker owned">POR1</div>
+          <div class="sticker owned">POR2</div>
+          <div class="sticker owned dup">POR3</div>
+          <div class="sticker missing">POR4</div>
+          <div class="sticker owned">POR5</div>
+          <div class="sticker owned">POR6</div>
+          <div class="sticker missing">POR7</div>
+          <div class="sticker owned dup">POR8</div>
+          <div class="sticker owned">POR9</div>
+          <div class="sticker missing">POR10</div>
         </div>
 
         <div class="category-header">
           <div class="category-flag" style="background: var(--panini-yellow)"></div>
+          <div class="category-emoji">🇧🇷</div>
           <div class="category-name">BRASIL</div>
           <div class="category-count">8/20</div>
         </div>
 
         <div class="stickers">
-          <div class="sticker owned team-2">71</div>
-          <div class="sticker missing">72</div>
-          <div class="sticker owned team-2 dup">73</div>
-          <div class="sticker owned team-2">74</div>
-          <div class="sticker missing">75</div>
+          <div class="sticker owned team-2">BRA1</div>
+          <div class="sticker missing">BRA2</div>
+          <div class="sticker owned team-2 dup">BRA3</div>
+          <div class="sticker owned team-2">BRA4</div>
+          <div class="sticker missing">BRA5</div>
         </div>
       </div>
     </div>
