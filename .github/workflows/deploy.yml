@@ -46,9 +46,11 @@ jobs:
             git reset --hard origin/main
             docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
             docker compose -f docker-compose.prod.yml --env-file .env.production exec -T api npx prisma migrate deploy
-            # Caddyfile is a read-only bind mount, so `up -d` does NOT pick up
-            # config changes when the caddy image itself didn't change. Force a
-            # zero-downtime config reload on every deploy — it's a no-op if the
-            # file was unchanged.
-            docker compose -f docker-compose.prod.yml --env-file .env.production exec -T caddy caddy reload --config /etc/caddy/Caddyfile
+            # Caddyfile is a read-only bind mount; `up -d` doesn't restart caddy
+            # when its image hasn't changed and `caddy reload` proved unreliable
+            # (the running container kept the old config in memory, presumably
+            # because the bind mount cached the previous inode). A full
+            # container restart guarantees a fresh read off the host filesystem
+            # and only costs ~2s of TLS-handshake blip.
+            docker compose -f docker-compose.prod.yml --env-file .env.production restart caddy
             docker image prune -f
