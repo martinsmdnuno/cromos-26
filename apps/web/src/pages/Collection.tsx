@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CATEGORIES,
@@ -58,7 +58,6 @@ export function Collection() {
   const [team, setTeam] = useState<string>(initialPrefs.team);
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<number | null>(null);
-  const [bulkMode, setBulkMode] = useState(false);
   const [packOpen, setPackOpen] = useState(false);
 
   useEffect(() => {
@@ -138,24 +137,14 @@ export function Collection() {
     return cats;
   }, [team, filter, almostCategoryIds]);
 
-  // Stable tap / long-press callbacks. The bulk-mode + collection lookups go
-  // through refs so the callback identity doesn't change on every render — that
-  // is what lets <StickerTile memo> skip re-renders for non-tapped tiles, and
-  // is the difference between a snappy tap and a 980-tile reconciliation lag.
-  const bulkRef = useRef(bulkMode);
-  bulkRef.current = bulkMode;
-  const collectionRef = useRef(collection);
-  collectionRef.current = collection;
+  // Stable tap / long-press callbacks — identity stays the same across renders so
+  // <StickerTile memo> can skip re-renders for non-tapped tiles. Without this
+  // every tap reconciled all 980 tiles.
   const mutate = setSticker.mutate;
 
   const handleTap = useCallback(
     (n: number, next: number) => {
-      if (bulkRef.current) {
-        const cur = collectionRef.current[n] ?? 0;
-        mutate({ number: n, count: Math.min(99, Math.max(1, cur + 1)) });
-      } else {
-        mutate({ number: n, count: next });
-      }
+      mutate({ number: n, count: next });
     },
     [mutate],
   );
@@ -185,23 +174,15 @@ export function Collection() {
         />
       </div>
 
-      {/* Action row: open-a-pack + bulk toggle, sit before the filters so the
-          most rewarding action (adding stickers) is the first thing the eye lands on. */}
-      <div className="mt-3 flex gap-2">
+      {/* Open-a-pack CTA. Sits before the filters so the most rewarding action
+          (adding stickers) is the first thing the eye lands on. */}
+      <div className="mt-3">
         <button
           onClick={() => setPackOpen(true)}
-          className="pill !bg-panini-yellow flex-1 !py-2 font-bold flex items-center justify-center gap-1.5"
+          className="pill !bg-panini-yellow w-full !py-2 font-bold flex items-center justify-center gap-1.5"
         >
           <span aria-hidden="true">📦</span>
           <span>{t('collection.open_pack')}</span>
-        </button>
-        <button
-          onClick={() => setBulkMode((b) => !b)}
-          className={`pill whitespace-nowrap ${bulkMode ? 'pill-active' : ''}`}
-          aria-pressed={bulkMode}
-          title={t('collection.bulk_hint')}
-        >
-          {bulkMode ? t('collection.bulk_active') : t('collection.bulk')}
         </button>
       </div>
 

@@ -70,9 +70,6 @@ export const en: Dict = {
   'collection.filter.almost': 'Almost done',
   'collection.filter.almost_hint':
     'Teams that are 70%+ complete — what is left to chase to finish a section.',
-  'collection.bulk': 'Bulk',
-  'collection.bulk_active': '✓ Bulk',
-  'collection.bulk_hint': 'Bulk mode: tap many stickers in sequence to mark owned',
   'collection.search_placeholder': 'Search by code or number (e.g. POR3, FWC14, 245)',
   'collection.search_aria': 'Search by sticker code or number',
   'collection.search_clear': 'Clear search',
@@ -289,9 +286,6 @@ export const pt: Dict = {
   'collection.filter.almost': 'Quase feito',
   'collection.filter.almost_hint':
     'Equipas a 70% ou mais — vê o que falta para fechares a secção.',
-  'collection.bulk': 'Massa',
-  'collection.bulk_active': '✓ Massa',
-  'collection.bulk_hint': 'Modo massa: toca em vários cromos em sequência para marcar como teus',
   'collection.search_placeholder': 'Procurar por código ou nº (ex. POR3, FWC14, 245)',
   'collection.search_aria': 'Procurar por código ou número de cromo',
   'collection.search_clear': 'Limpar pesquisa',
