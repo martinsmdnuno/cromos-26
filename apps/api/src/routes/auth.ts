@@ -49,6 +49,8 @@ export async function authRoutes(app: FastifyInstance) {
     const { email, password } = parsed.data;
     const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
     if (!user) return reply.code(401).send({ error: 'invalid_credentials' });
+    // Google-only users have no password hash — they have to sign in via OAuth.
+    if (!user.passwordHash) return reply.code(401).send({ error: 'use_google_signin' });
     const ok = await verifyPassword(password, user.passwordHash);
     if (!ok) return reply.code(401).send({ error: 'invalid_credentials' });
     const token = app.jwt.sign({ sub: user.id });

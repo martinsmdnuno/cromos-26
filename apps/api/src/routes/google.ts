@@ -1,5 +1,8 @@
 import type { FastifyInstance } from 'fastify';
-import oauthPlugin from '@fastify/oauth2';
+import oauthPlugin, {
+  fastifyOauth2,
+  type OAuth2Namespace,
+} from '@fastify/oauth2';
 import { prisma } from '../prisma.js';
 import { COOKIE_NAME } from '../auth.js';
 import { env } from '../env.js';
@@ -62,7 +65,7 @@ export async function googleRoutes(app: FastifyInstance) {
         id: env.GOOGLE_CLIENT_ID,
         secret: env.GOOGLE_CLIENT_SECRET,
       },
-      auth: oauthPlugin.GOOGLE_CONFIGURATION,
+      auth: fastifyOauth2.GOOGLE_CONFIGURATION,
     },
     startRedirectPath: '/start',
     callbackUri,
@@ -74,7 +77,7 @@ export async function googleRoutes(app: FastifyInstance) {
   });
 
   app.get('/callback', async (req, reply) => {
-    const oauth = (app as unknown as { googleOAuth: typeof oauthPlugin.OAuth2Namespace }).googleOAuth;
+    const oauth = (app as unknown as { googleOAuth: OAuth2Namespace }).googleOAuth;
     const tokenResponse = await oauth.getAccessTokenFromAuthorizationCodeFlow(req as never);
     const accessToken = tokenResponse.token.access_token;
 
