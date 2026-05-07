@@ -13,10 +13,7 @@ import { metaRoutes } from './routes/meta.js';
 
 export function buildServer() {
   const app = Fastify({
-    logger:
-      env.NODE_ENV === 'production'
-        ? { level: 'info' }
-        : { level: 'debug', transport: { target: 'pino-pretty' } as never },
+    logger: { level: env.NODE_ENV === 'production' ? 'info' : 'debug' },
     trustProxy: true,
   });
 
