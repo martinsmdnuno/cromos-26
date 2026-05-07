@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { Trophy } from '../components/Trophy';
 
 /**
  * Single CTA onboarding. Big "26" hero with quilt shapes, then name + email + password.
@@ -59,10 +60,10 @@ export function Onboarding() {
               className="absolute bottom-[-20px] right-[60px] w-20 h-20 rounded-full"
               style={{ background: '#F4C430' }}
             />
-            <div
-              className="absolute top-[40px] right-[80px] w-14 h-14"
-              style={{ background: '#2E6FB8' }}
-            />
+            {/* Trophy peeks from behind the "26" — small enough to feel like a brand mark, not a competing focal point. */}
+            <div className="absolute top-3 right-4 rotate-12 opacity-95">
+              <Trophy size={68} color="#F4C430" stroke="#1A1A1A" />
+            </div>
           </div>
           <div className="relative z-10">
             <div className="label-mono opacity-70">CROMOS · WORLD CUP 2026</div>

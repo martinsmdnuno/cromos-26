@@ -1,8 +1,10 @@
+import { Trophy } from './Trophy';
+
 interface LogoProps {
   className?: string;
 }
 
-/** Inline horizontal wordmark — the iconic "26" + CROMOS lockup. */
+/** Inline horizontal wordmark — the iconic "26" + small trophy + CROMOS lockup. */
 export function Logo({ className }: LogoProps) {
   return (
     <div className={['flex items-baseline gap-2', className].filter(Boolean).join(' ')}>
@@ -13,6 +15,9 @@ export function Logo({ className }: LogoProps) {
       >
         <span className="text-panini-red">2</span>
         <span className="text-panini-blue">6</span>
+      </span>
+      <span className="self-center -translate-y-0.5">
+        <Trophy size={22} />
       </span>
       <span className="font-mono text-[9px] font-bold tracking-[2px] -translate-y-1">CROMOS</span>
     </div>

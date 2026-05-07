@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
 import { PALETTE, type PaletteKey } from '@cromos/shared';
 import { useAuth } from '../hooks/useAuth';
+import { Trophy } from '../components/Trophy';
 
 interface StatsResponse {
   total: number;
@@ -46,10 +47,10 @@ export function Stats() {
             className="absolute bottom-[-20px] right-[60px] w-20 h-20 rounded-full"
             style={{ background: '#F4C430' }}
           />
-          <div
-            className="absolute top-[30px] right-[80px] w-14 h-14"
-            style={{ background: '#2E6FB8' }}
-          />
+          {/* Trophy as the "you're chasing the cup" cue, sized so it doesn't fight with the % number. */}
+          <div className="absolute top-2 right-4 -rotate-6">
+            <Trophy size={72} color="#F4C430" stroke="#1A1A1A" />
+          </div>
         </div>
         <div className="relative z-10">
           <div className="label-mono opacity-70">Album completion</div>
