@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { memo, useRef } from 'react';
 import clsx from 'clsx';
 import { categoryForSticker, PALETTE, stickerLabel } from '@cromos/shared';
 import { useT } from '../i18n/LangContext';
@@ -6,14 +6,16 @@ import { useT } from '../i18n/LangContext';
 interface Props {
   number: number;
   count: number; // 0 missing, 1 owned, 2+ duplicate
-  /** Short tap: toggle owned (off → 1, ≥1 → 0). */
-  onTap: (next: number) => void;
+  /** Short tap: toggle owned (off → 1, ≥1 → 0). The tile passes its own number
+   *  back so the parent can keep a single stable callback for ALL tiles, which
+   *  makes React.memo actually work. */
+  onTap: (number: number, next: number) => void;
   /** Long press: open count editor. */
-  onLongPress: () => void;
+  onLongPress: (number: number) => void;
 }
 
 const LONG_PRESS_MS = 450;
-const MOVE_SLOP_PX = 8;
+const MOVE_SLOP_PX = 12;
 
 /**
  * Sticker tile. State-driven styling:
@@ -21,13 +23,24 @@ const MOVE_SLOP_PX = 8;
  *  - owned: solid team color + white/dark number depending on color brightness
  *  - duplicate: owned + orange ×N badge ribbon (handled via .dup CSS in index.css)
  *
- * Input handling uses Pointer Events so we get ONE event stream regardless of mouse,
- * touch or pen. Mixing onTouch* + onMouse* produced ghost double-taps on iOS Safari
- * because the browser synthesizes mouse events ~300ms after touchend, and our handlers
- * fired onTap twice. With pointer events we also get free scroll cancellation
- * (pointercancel) and no need to preventDefault.
+ * Input: Pointer Events with `setPointerCapture` so the tile keeps receiving
+ * events even when momentum-scroll moves it under the user's finger or when the
+ * touch slightly leaves the small (~56px) tile bounds. Without capture, iOS
+ * would fire `pointerleave` mid-tap on every section below the fold, swallowing
+ * the click — that's the bug where teams appeared "untouchable" on a long
+ * scrolled page. We deliberately do NOT subscribe to `onPointerLeave`.
+ *
+ * The component is memoised. Combined with the `(number, next)` callback shape
+ * and stable callback refs at the parent, props for non-tapped tiles stay
+ * referentially equal across re-renders, so a tap only re-renders one tile
+ * instead of all 980.
  */
-export function StickerTile({ number, count, onTap, onLongPress }: Props) {
+export const StickerTile = memo(function StickerTile({
+  number,
+  count,
+  onTap,
+  onLongPress,
+}: Props) {
   const { t } = useT();
   const cat = categoryForSticker(number);
   const teamColor = PALETTE[cat.colorKey];
@@ -43,15 +56,11 @@ export function StickerTile({ number, count, onTap, onLongPress }: Props) {
   const activePointer = useRef<number | null>(null);
   const startXY = useRef<{ x: number; y: number } | null>(null);
 
-  const clearTimer = () => {
+  const cancel = () => {
     if (longPressTimer.current !== null) {
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
     }
-  };
-
-  const reset = () => {
-    clearTimer();
     activePointer.current = null;
     startXY.current = null;
   };
@@ -59,12 +68,17 @@ export function StickerTile({ number, count, onTap, onLongPress }: Props) {
   const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (activePointer.current !== null) return; // ignore secondary pointers
     activePointer.current = e.pointerId;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // Older browsers without pointer capture: fall through, behaviour is the
+      // same as before — pointerup must hit the same element.
+    }
     startXY.current = { x: e.clientX, y: e.clientY };
     longPressed.current = false;
     longPressTimer.current = window.setTimeout(() => {
       longPressed.current = true;
-      onLongPress();
-      reset();
+      onLongPress(number);
     }, LONG_PRESS_MS);
   };
 
@@ -72,19 +86,23 @@ export function StickerTile({ number, count, onTap, onLongPress }: Props) {
     if (e.pointerId !== activePointer.current || !startXY.current) return;
     const dx = e.clientX - startXY.current.x;
     const dy = e.clientY - startXY.current.y;
-    if (dx * dx + dy * dy > MOVE_SLOP_PX * MOVE_SLOP_PX) reset();
+    if (dx * dx + dy * dy > MOVE_SLOP_PX * MOVE_SLOP_PX) {
+      // Movement crossed the slop threshold — treat as scroll/drag and abandon.
+      cancel();
+    }
   };
 
   const onPointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.pointerId !== activePointer.current) return;
     const wasPressing = longPressTimer.current !== null;
-    reset();
-    if (wasPressing && !longPressed.current) onTap(isOwned ? 0 : 1);
+    const wasLong = longPressed.current;
+    cancel();
+    if (wasPressing && !wasLong) onTap(number, isOwned ? 0 : 1);
   };
 
   const onPointerCancel = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.pointerId !== activePointer.current) return;
-    reset();
+    cancel();
   };
 
   const status = !isOwned
@@ -109,7 +127,6 @@ export function StickerTile({ number, count, onTap, onLongPress }: Props) {
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerCancel}
-      onPointerLeave={onPointerCancel}
       onContextMenu={(e) => e.preventDefault()}
       aria-label={ariaLabel}
       aria-pressed={isOwned}
@@ -117,4 +134,4 @@ export function StickerTile({ number, count, onTap, onLongPress }: Props) {
       {display}
     </button>
   );
-}
+});

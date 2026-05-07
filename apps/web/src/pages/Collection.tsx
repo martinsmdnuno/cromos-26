@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CATEGORIES,
@@ -138,9 +138,29 @@ export function Collection() {
     return cats;
   }, [team, filter, almostCategoryIds]);
 
-  const onTap = (n: number, next: number) => {
-    setSticker.mutate({ number: n, count: next });
-  };
+  // Stable tap / long-press callbacks. The bulk-mode + collection lookups go
+  // through refs so the callback identity doesn't change on every render — that
+  // is what lets <StickerTile memo> skip re-renders for non-tapped tiles, and
+  // is the difference between a snappy tap and a 980-tile reconciliation lag.
+  const bulkRef = useRef(bulkMode);
+  bulkRef.current = bulkMode;
+  const collectionRef = useRef(collection);
+  collectionRef.current = collection;
+  const mutate = setSticker.mutate;
+
+  const handleTap = useCallback(
+    (n: number, next: number) => {
+      if (bulkRef.current) {
+        const cur = collectionRef.current[n] ?? 0;
+        mutate({ number: n, count: Math.min(99, Math.max(1, cur + 1)) });
+      } else {
+        mutate({ number: n, count: next });
+      }
+    },
+    [mutate],
+  );
+
+  const handleLongPress = useCallback((n: number) => setEditing(n), []);
 
   return (
     <div className="px-5">
@@ -258,11 +278,8 @@ export function Collection() {
               cat={cat}
               stickers={stickers}
               collection={collection}
-              onTap={(n, next) => {
-                if (bulkMode) onTap(n, Math.max(1, (collection[n] ?? 0) + 1));
-                else onTap(n, next);
-              }}
-              onLongPress={(n) => setEditing(n)}
+              onTap={handleTap}
+              onLongPress={handleLongPress}
             />
           );
         })}
@@ -360,8 +377,8 @@ function CategorySection({
             key={n}
             number={n}
             count={collection[n] ?? 0}
-            onTap={(next) => onTap(n, next)}
-            onLongPress={() => onLongPress(n)}
+            onTap={onTap}
+            onLongPress={onLongPress}
           />
         ))}
       </div>
