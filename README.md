@@ -118,6 +118,46 @@ docker compose down -v                            # nuke local DB
 
 ---
 
+## Google OAuth setup (optional)
+
+The app supports email/password sign-in plus "Continue with Google" via OAuth 2.0.
+Google sign-in is **optional** — if you don't configure credentials, the button still
+renders but clicking it 404s. To enable it:
+
+1. Go to <https://console.cloud.google.com/> and create a project (e.g. `cromos-26`).
+2. Open **APIs & Services → OAuth consent screen**.
+   - User type: **External** (unless you have a Workspace).
+   - App name: `Cromos 26`. Support email: yours.
+   - On the **Scopes** screen pick `userinfo.email`, `userinfo.profile`, `openid`.
+   - On **Test users**, add your own Google address while the app is in "Testing"
+     mode — that's the easiest way to use it without going through Google's review.
+3. **APIs & Services → Credentials → Create Credentials → OAuth client ID.**
+   - Application type: **Web application**.
+   - Authorised JavaScript origins:
+     ```
+     http://localhost:5173
+     http://localhost:3000
+     https://yourdomain.com
+     ```
+   - Authorised redirect URIs:
+     ```
+     http://localhost:3000/api/auth/google/callback
+     https://yourdomain.com/api/auth/google/callback
+     ```
+4. Copy the **Client ID** and **Client secret** into your `.env` (dev) or
+   `.env.production` (prod):
+   ```env
+   GOOGLE_CLIENT_ID=<paste here>
+   GOOGLE_CLIENT_SECRET=<paste here>
+   ```
+5. Restart the API: `docker compose restart api`.
+
+When Google sign-in works:
+- A new user signing in with Google gets a record with `googleId` set and no
+  `passwordHash`. They cannot use the email/password form — only Google.
+- An **existing** email/password user signing in with Google for the first time
+  has their account **linked** by email. They can use both login methods after.
+
 ## Updating the sticker / team list
 
 The current layout in `packages/shared/src/stickers.ts` follows the **official Panini 2026

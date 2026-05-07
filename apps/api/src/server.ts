@@ -5,6 +5,7 @@ import jwt from '@fastify/jwt';
 import { env } from './env.js';
 import { COOKIE_NAME } from './auth.js';
 import { authRoutes } from './routes/auth.js';
+import { googleRoutes } from './routes/google.js';
 import { collectionRoutes } from './routes/collection.js';
 import { groupRoutes } from './routes/groups.js';
 import { tradeRoutes } from './routes/trades.js';
@@ -34,6 +35,7 @@ export function buildServer() {
 
   app.register(metaRoutes, { prefix: '/api/meta' });
   app.register(authRoutes, { prefix: '/api/auth' });
+  app.register(googleRoutes, { prefix: '/api/auth/google' });
   app.register(collectionRoutes, { prefix: '/api/collection' });
   app.register(groupRoutes, { prefix: '/api/groups' });
   app.register(tradeRoutes, { prefix: '/api/trades' });

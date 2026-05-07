@@ -8,6 +8,13 @@ const schema = z.object({
   DATABASE_URL: z.string().url(),
   APP_URL: z.string().url().default('http://localhost:5173'),
   COOKIE_DOMAIN: z.string().default('localhost'),
+  // Google OAuth — optional. If unset, the /api/auth/google/* routes are NOT registered
+  // and the "Continue with Google" button on the frontend will 404. See README.md for
+  // how to obtain these from Google Cloud Console.
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  /** Where the API itself lives — used to build the OAuth callback URL. Defaults to APP_URL when same-origin. */
+  API_PUBLIC_URL: z.string().url().optional(),
 });
 
 const parsed = schema.safeParse(process.env);

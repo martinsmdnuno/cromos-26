@@ -17,7 +17,12 @@ model User {
   id           String   @id @default(cuid())
   email        String   @unique
   name         String
-  passwordHash String
+  // Optional: users created via Google OAuth have no password.
+  passwordHash String?
+  // Google's `sub` claim — stable per-user identifier from the ID token.
+  googleId     String?  @unique
+  // URL to the user's Google avatar (optional, populated on first OAuth login).
+  avatarUrl    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
