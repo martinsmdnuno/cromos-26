@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    background: #f5e6d3; /* panini-cream — never pure white */
+    color: #1a1a1a;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    overscroll-behavior-y: none;
+  }
+  *:focus-visible {
+    outline: 3px solid #f4c430;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  button {
+    font-family: inherit;
+  }
+  input,
+  textarea {
+    font-family: inherit;
+  }
+}
+
+@layer components {
+  /* The flat poster look: solid border, no shadow. */
+  .card {
+    @apply bg-white border-2 border-panini-ink rounded-xl;
+  }
+  .card-hero {
+    @apply bg-panini-cream border-3 border-panini-ink rounded-[20px] overflow-hidden relative;
+  }
+  .pill {
+    @apply rounded-pill border-2 border-panini-ink px-3 py-1.5 text-sm font-semibold bg-white;
+  }
+  .pill-active {
+    @apply bg-panini-ink text-white;
+  }
+  .label-mono {
+    font-family: 'JetBrains Mono', monospace;
+    @apply uppercase tracking-[0.15em] text-[10px] font-bold;
+  }
+  .num-display {
+    font-family: 'Anton', sans-serif;
+    @apply tracking-[-0.02em];
+  }
+}
+
+/* Hide scrollbars on horizontal chip rows but keep them on vertical lists. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+/* Sticker tile — base layout, color comes via inline style for team. */
+.sticker-tile {
+  aspect-ratio: 2 / 3;
+  @apply rounded-lg border-2 border-panini-ink relative flex items-center justify-center font-mono text-[10px] font-bold transition-transform;
+}
+.sticker-tile:active {
+  transform: scale(0.96);
+}
+.sticker-tile.missing {
+  background: #ffffff;
+  border-style: dashed;
+  color: #aaaaaa;
+}
+.sticker-tile.dup::after {
+  content: '×' attr(data-count);
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #f2812a;
+  color: #1a1a1a;
+  border: 2px solid #1a1a1a;
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}

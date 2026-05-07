@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Square logo for favicon / app icon -->
+  <rect width="400" height="400" fill="#F5E6D3"/>
+
+  <!-- Quilt pattern background -->
+  <g>
+    <path d="M 0 0 L 200 0 Q 200 200 0 200 Z" fill="#E63027"/>
+    <path d="M 200 0 L 400 0 L 400 200 Q 200 200 200 0 Z" fill="#F4C430"/>
+    <path d="M 0 200 L 200 200 Q 200 400 0 400 Z" fill="#6FBE44"/>
+    <path d="M 200 200 L 400 200 L 400 400 Q 200 400 200 200 Z" fill="#2E6FB8"/>
+    <!-- Center circle to anchor "26" -->
+    <circle cx="200" cy="200" r="130" fill="#FFFFFF"/>
+    <circle cx="200" cy="200" r="130" fill="none" stroke="#1A1A1A" stroke-width="6"/>
+  </g>
+
+  <!-- "26" numerals -->
+  <text x="200" y="265" text-anchor="middle"
+        font-family="'Anton', 'Bebas Neue', Impact, sans-serif"
+        font-size="200" fill="#1A1A1A" letter-spacing="-8">26</text>
+
+  <!-- Tiny CROMOS label below center -->
+  <text x="200" y="305" text-anchor="middle"
+        font-family="'JetBrains Mono', 'Space Mono', monospace"
+        font-size="14" fill="#E63027" letter-spacing="6" font-weight="700">CROMOS</text>
+</svg>
