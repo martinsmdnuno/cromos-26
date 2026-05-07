@@ -7,15 +7,14 @@ interface Props {
   number: number;
   count: number; // 0 missing, 1 owned, 2+ duplicate
   /** Short tap: toggle owned (off → 1, ≥1 → 0). The tile passes its own number
-   *  back so the parent can keep a single stable callback for ALL tiles, which
-   *  makes React.memo actually work. */
+   *  back so the parent can keep one stable callback for ALL tiles, which is
+   *  what lets React.memo actually skip non-tapped tiles. */
   onTap: (number: number, next: number) => void;
   /** Long press: open count editor. */
   onLongPress: (number: number) => void;
 }
 
 const LONG_PRESS_MS = 450;
-const MOVE_SLOP_PX = 12;
 
 /**
  * Sticker tile. State-driven styling:
@@ -23,17 +22,17 @@ const MOVE_SLOP_PX = 12;
  *  - owned: solid team color + white/dark number depending on color brightness
  *  - duplicate: owned + orange ×N badge ribbon (handled via .dup CSS in index.css)
  *
- * Input: Pointer Events with `setPointerCapture` so the tile keeps receiving
- * events even when momentum-scroll moves it under the user's finger or when the
- * touch slightly leaves the small (~56px) tile bounds. Without capture, iOS
- * would fire `pointerleave` mid-tap on every section below the fold, swallowing
- * the click — that's the bug where teams appeared "untouchable" on a long
- * scrolled page. We deliberately do NOT subscribe to `onPointerLeave`.
+ * Input handling: native `onClick` for the tap, plus a small Pointer-Events
+ * timer for the long-press detection. We previously rolled our own pointerup-
+ * fires-onTap logic with `setPointerCapture`, but iOS Safari kept cancelling
+ * the captured pointer the moment momentum scroll touched anything below the
+ * fold — taps on every team section silently dropped. Native `click` already
+ * handles all of: tap-vs-scroll arbitration, slop tolerance, double-tap delay
+ * (with `touch-action: manipulation`), and synthetic-mouse-event suppression.
  *
- * The component is memoised. Combined with the `(number, next)` callback shape
- * and stable callback refs at the parent, props for non-tapped tiles stay
- * referentially equal across re-renders, so a tap only re-renders one tile
- * instead of all 980.
+ * The tile is memoised. With stable parent callbacks for `onTap`/`onLongPress`
+ * and primitive `number`/`count` props, a tap only re-renders the one tile
+ * whose count changed, instead of the whole 980-tile grid.
  */
 export const StickerTile = memo(function StickerTile({
   number,
@@ -52,57 +51,36 @@ export const StickerTile = memo(function StickerTile({
   const textColor = lightBg.has(teamColor) ? '#1A1A1A' : '#FFFFFF';
 
   const longPressTimer = useRef<number | null>(null);
-  const longPressed = useRef(false);
-  const activePointer = useRef<number | null>(null);
-  const startXY = useRef<{ x: number; y: number } | null>(null);
+  // True once the long-press timer has fired and the modal opened. Used to
+  // swallow the click that follows when the user finally lifts their finger.
+  const longPressFired = useRef(false);
 
-  const cancel = () => {
-    if (longPressTimer.current !== null) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-    activePointer.current = null;
-    startXY.current = null;
-  };
-
-  const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
-    if (activePointer.current !== null) return; // ignore secondary pointers
-    activePointer.current = e.pointerId;
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      // Older browsers without pointer capture: fall through, behaviour is the
-      // same as before — pointerup must hit the same element.
-    }
-    startXY.current = { x: e.clientX, y: e.clientY };
-    longPressed.current = false;
+  const startLongPress = () => {
+    longPressFired.current = false;
+    if (longPressTimer.current !== null) clearTimeout(longPressTimer.current);
     longPressTimer.current = window.setTimeout(() => {
-      longPressed.current = true;
+      longPressFired.current = true;
+      longPressTimer.current = null;
       onLongPress(number);
     }, LONG_PRESS_MS);
   };
 
-  const onPointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
-    if (e.pointerId !== activePointer.current || !startXY.current) return;
-    const dx = e.clientX - startXY.current.x;
-    const dy = e.clientY - startXY.current.y;
-    if (dx * dx + dy * dy > MOVE_SLOP_PX * MOVE_SLOP_PX) {
-      // Movement crossed the slop threshold — treat as scroll/drag and abandon.
-      cancel();
+  const cancelLongPress = () => {
+    if (longPressTimer.current !== null) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
     }
   };
 
-  const onPointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
-    if (e.pointerId !== activePointer.current) return;
-    const wasPressing = longPressTimer.current !== null;
-    const wasLong = longPressed.current;
-    cancel();
-    if (wasPressing && !wasLong) onTap(number, isOwned ? 0 : 1);
-  };
-
-  const onPointerCancel = (e: React.PointerEvent<HTMLButtonElement>) => {
-    if (e.pointerId !== activePointer.current) return;
-    cancel();
+  const handleClick = (e: React.MouseEvent) => {
+    cancelLongPress();
+    if (longPressFired.current) {
+      // Long-press already opened the modal — don't also toggle the count.
+      longPressFired.current = false;
+      e.preventDefault();
+      return;
+    }
+    onTap(number, isOwned ? 0 : 1);
   };
 
   const status = !isOwned
@@ -123,10 +101,11 @@ export const StickerTile = memo(function StickerTile({
       className={clsx('sticker-tile', !isOwned && 'missing', isDup && 'dup')}
       style={isOwned ? { background: teamColor, color: textColor } : undefined}
       data-count={isDup ? count : undefined}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerCancel}
+      onPointerDown={startLongPress}
+      onPointerUp={cancelLongPress}
+      onPointerCancel={cancelLongPress}
+      onPointerLeave={cancelLongPress}
+      onClick={handleClick}
       onContextMenu={(e) => e.preventDefault()}
       aria-label={ariaLabel}
       aria-pressed={isOwned}
