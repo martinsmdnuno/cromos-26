@@ -17,7 +17,9 @@ stickers.martinsnuno.com {
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
 		Referrer-Policy "strict-origin-when-cross-origin"
-		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		# Allow microphone on same-origin (voice input on Open-a-pack); block
+		# geolocation and camera since we don't use them.
+		Permissions-Policy "geolocation=(), microphone=(self), camera=()"
 		# Remove Caddy's default Server header.
 		-Server
 	}
