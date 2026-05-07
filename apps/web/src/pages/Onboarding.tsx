@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Trophy } from '../components/Trophy';
 import { LangToggle } from '../components/LangToggle';
+import { ToolkitCard } from '../components/ToolkitCard';
 import { useT } from '../i18n/LangContext';
 
 /**
@@ -82,6 +83,10 @@ export function Onboarding() {
             <p className="mt-3 font-mono text-[12px] font-bold">{t('app.tagline')}</p>
           </div>
         </div>
+
+        {/* Cross-sell: Cromos + wc26 framed as one toolkit. Doubles as the public
+            landing for unauthenticated visitors who hit stickers.martinsnuno.com. */}
+        <ToolkitCard />
 
         <form onSubmit={submit} className="card p-5 space-y-3">
           <h2 className="font-display text-2xl mb-1">

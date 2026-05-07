@@ -122,7 +122,24 @@ export function Stats() {
       {/* Missing list (collapsible, copyable) */}
       <MissingList numbers={s.missingNumbers} />
 
-      <div className="mt-8 flex justify-center">
+      {/* Cross-sell: subtle footer card pointing to the sister app. Same dev,
+          complementary need (predictions / betting pool vs sticker tracking). */}
+      <a
+        href="https://martinsmdnuno.github.io/wc26/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-6 card flex items-center gap-3 px-4 py-3 hover:bg-panini-cream transition-colors"
+      >
+        <div className="w-10 h-10 rounded-lg border-2 border-panini-ink bg-panini-blue text-white font-display flex items-center justify-center text-base flex-shrink-0">
+          wc26
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="label-mono opacity-60">{t('cross.stats_footer_lead')}</div>
+          <div className="font-semibold text-[13px]">{t('cross.stats_footer_cta')}</div>
+        </div>
+      </a>
+
+      <div className="mt-6 flex justify-center">
         <button onClick={() => logout()} className="pill text-panini-red border-panini-red">
           {t('auth.sign_out')}
         </button>

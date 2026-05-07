@@ -151,6 +151,16 @@ export const en: Dict = {
   'stats.copied': 'Copied!',
   'stats.complete': 'None — you have them all!',
 
+  // Cross-sell — wc26 (sister app: predictions + betting pool).
+  'cross.toolkit_label': 'YOUR WORLD CUP 2026 TOOLKIT',
+  'cross.cromos_title': 'Track your stickers',
+  'cross.cromos_sub': '980 stickers · groups · trade optimizer',
+  'cross.wc26_title': 'Predict the matches',
+  'cross.wc26_sub': 'Schedule · betting pool · leaderboard',
+  'cross.wc26_cta': 'Open wc26 →',
+  'cross.stats_footer_lead': 'Built by the same hands.',
+  'cross.stats_footer_cta': 'Try wc26 — predictions & betting pool →',
+
   // Categories — keyed by the `id` from packages/shared/src/stickers.ts.
   // The id-based pattern means components can do `t(\`category.${cat.id}\`)` and
   // get the localized name without coupling the data layer to the i18n system.
@@ -332,6 +342,16 @@ export const pt: Dict = {
   'stats.copy_all': 'Copiar tudo',
   'stats.copied': 'Copiado!',
   'stats.complete': 'Nenhum — tens todos!',
+
+  // Cross-sell — wc26.
+  'cross.toolkit_label': 'O TEU TOOLKIT DO MUNDIAL 2026',
+  'cross.cromos_title': 'Caderneta de cromos',
+  'cross.cromos_sub': '980 cromos · grupos · trocas otimizadas',
+  'cross.wc26_title': 'Previsões dos jogos',
+  'cross.wc26_sub': 'Calendário · quiniela · classificação',
+  'cross.wc26_cta': 'Abrir wc26 →',
+  'cross.stats_footer_lead': 'Construído pelas mesmas mãos.',
+  'cross.stats_footer_cta': 'Experimenta o wc26 — previsões e quiniela →',
 
   // Categories — PT-PT names. Order mirrors the EN block above so it's easy to diff.
   'category.opening': 'Abertura / Logos',
