@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
+import { useT } from '../i18n/LangContext';
 
 interface GroupListItem {
   id: string;
@@ -14,6 +15,7 @@ interface GroupListItem {
 
 export function Groups() {
   const qc = useQueryClient();
+  const { t } = useT();
   const groupsQ = useQuery({
     queryKey: ['groups'],
     queryFn: () => api.get<{ groups: GroupListItem[] }>('/api/groups'),
@@ -36,7 +38,7 @@ export function Groups() {
     <div className="px-5 mt-3">
       <div className="flex items-center gap-2.5 pb-2">
         <div className="w-1.5 h-6 rounded-sm bg-panini-blue" />
-        <h2 className="font-display text-lg tracking-wide">YOUR GROUPS</h2>
+        <h2 className="font-display text-lg tracking-wide">{t('groups.your_groups')}</h2>
       </div>
 
       <div className="grid grid-cols-2 gap-2 mb-4">
@@ -44,19 +46,19 @@ export function Groups() {
           className="card p-3 font-bold text-left bg-panini-yellow"
           onClick={() => setShowCreate(true)}
         >
-          <div className="font-display text-2xl leading-none">+ NEW</div>
-          <div className="label-mono mt-1 opacity-70">Create a group</div>
+          <div className="font-display text-2xl leading-none">{t('groups.new')}</div>
+          <div className="label-mono mt-1 opacity-70">{t('groups.new_sub')}</div>
         </button>
         <button
           className="card p-3 font-bold text-left bg-panini-teal text-panini-ink"
           onClick={() => setShowJoin(true)}
         >
-          <div className="font-display text-2xl leading-none">JOIN</div>
-          <div className="label-mono mt-1 opacity-70">Use invite code</div>
+          <div className="font-display text-2xl leading-none">{t('groups.join')}</div>
+          <div className="label-mono mt-1 opacity-70">{t('groups.join_sub')}</div>
         </button>
       </div>
 
-      {groupsQ.isLoading && <div className="label-mono opacity-50 mt-4">Loading…</div>}
+      {groupsQ.isLoading && <div className="label-mono opacity-50 mt-4">{t('groups.loading')}</div>}
 
       <ul className="space-y-2">
         {(groupsQ.data?.groups ?? []).map((g) => (
@@ -74,7 +76,11 @@ export function Groups() {
               <div className="flex-1 min-w-0">
                 <div className="font-bold truncate">{g.name}</div>
                 <div className="label-mono opacity-60">
-                  {g.memberCount} member{g.memberCount === 1 ? '' : 's'} · CODE {g.code}
+                  {g.memberCount === 1
+                    ? t('groups.member_count_one')
+                    : t('groups.member_count_other', { n: g.memberCount })}
+                  {' · '}
+                  {t('groups.code_label', { code: g.code })}
                 </div>
               </div>
               <span className="font-mono opacity-60">›</span>
@@ -84,16 +90,14 @@ export function Groups() {
       </ul>
 
       {groupsQ.data?.groups.length === 0 && (
-        <p className="text-center mt-8 opacity-60 text-sm">
-          No groups yet. Create one or join with a friend's invite code.
-        </p>
+        <p className="text-center mt-8 opacity-60 text-sm">{t('groups.empty')}</p>
       )}
 
       {showCreate && (
         <PromptModal
-          title="NEW GROUP"
-          placeholder="Group name (e.g. Café Friends)"
-          submitLabel="CREATE"
+          title={t('modal.new_group_title')}
+          placeholder={t('modal.group_name_placeholder')}
+          submitLabel={t('modal.create')}
           onClose={() => setShowCreate(false)}
           onSubmit={async (val) => {
             await create.mutateAsync(val);
@@ -103,9 +107,9 @@ export function Groups() {
       )}
       {showJoin && (
         <PromptModal
-          title="JOIN A GROUP"
-          placeholder="6-CHAR CODE"
-          submitLabel="JOIN"
+          title={t('modal.join_group_title')}
+          placeholder={t('modal.code_placeholder')}
+          submitLabel={t('modal.join')}
           mono
           onClose={() => setShowJoin(false)}
           onSubmit={async (val) => {
@@ -133,6 +137,7 @@ function PromptModal({
   onClose: () => void;
   onSubmit: (val: string) => Promise<void>;
 }) {
+  const { t } = useT();
   const [val, setVal] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -147,10 +152,10 @@ function PromptModal({
       const msg = (e as { error?: string }).error;
       setErr(
         msg === 'group_not_found'
-          ? 'No group with that code'
+          ? t('modal.error.group_not_found')
           : msg === 'invalid_code'
-            ? 'Codes are 6 letters/numbers'
-            : 'Something went wrong',
+            ? t('modal.error.invalid_code')
+            : t('modal.error.generic'),
       );
     } finally {
       setBusy(false);
@@ -181,12 +186,8 @@ function PromptModal({
         />
         {err && <p className="text-sm text-panini-red font-semibold">{err}</p>}
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="pill flex-1"
-          >
-            Cancel
+          <button type="button" onClick={onClose} className="pill flex-1">
+            {t('modal.cancel')}
           </button>
           <button
             disabled={busy}

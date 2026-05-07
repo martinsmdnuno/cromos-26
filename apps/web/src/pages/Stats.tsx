@@ -4,6 +4,7 @@ import { api } from '../api';
 import { PALETTE, type PaletteKey } from '@cromos/shared';
 import { useAuth } from '../hooks/useAuth';
 import { Trophy } from '../components/Trophy';
+import { useT } from '../i18n/LangContext';
 
 interface StatsResponse {
   total: number;
@@ -25,6 +26,7 @@ interface StatsResponse {
 
 export function Stats() {
   const { logout } = useAuth();
+  const { t } = useT();
   const q = useQuery({
     queryKey: ['stats'],
     queryFn: () => api.get<StatsResponse>('/api/stats'),
@@ -32,7 +34,7 @@ export function Stats() {
   });
 
   if (q.isLoading || !q.data) {
-    return <div className="px-5 mt-3 label-mono opacity-50">Loading…</div>;
+    return <div className="px-5 mt-3 label-mono opacity-50">{t('groups.loading')}</div>;
   }
   const s = q.data;
   const pctInt = Math.floor(s.completionPct);
@@ -40,7 +42,7 @@ export function Stats() {
   return (
     <div className="px-5 pb-10">
       <div className="pt-3 pb-2">
-        <h1 className="font-display text-3xl tracking-wide uppercase">YOUR PROGRESS</h1>
+        <h1 className="font-display text-3xl tracking-wide uppercase">{t('stats.your_progress')}</h1>
       </div>
 
       {/* Hero — 110px "26"-style number with quilt shapes */}
@@ -60,7 +62,7 @@ export function Stats() {
           </div>
         </div>
         <div className="relative z-10">
-          <div className="label-mono opacity-70">Album completion</div>
+          <div className="label-mono opacity-70">{t('app.album_completion')}</div>
           <div
             className="num-display"
             style={{ fontSize: 110, lineHeight: 0.85, letterSpacing: '-4px' }}
@@ -69,23 +71,23 @@ export function Stats() {
             <span style={{ fontSize: 60, color: '#E63027' }}>%</span>
           </div>
           <div className="font-mono text-[12px] font-bold mt-1.5">
-            {s.owned} / {s.total} stickers
+            {t('stats.x_of_y', { owned: s.owned, total: s.total })}
           </div>
         </div>
       </div>
 
       {/* 4 colored stat blocks */}
       <div className="grid grid-cols-2 gap-2 mb-4">
-        <Block label="Owned" value={s.owned} bg="#6FBE44" textInk />
-        <Block label="Missing" value={s.missing} bg="#E63027" />
-        <Block label="Duplicates" value={s.duplicates} bg="#F4C430" textInk />
-        <Block label="Total" value={s.heldTotal} bg="#7B4B9E" />
+        <Block label={t('stats.block.owned')} value={s.owned} bg="#6FBE44" textInk />
+        <Block label={t('stats.block.missing')} value={s.missing} bg="#E63027" />
+        <Block label={t('stats.block.duplicates')} value={s.duplicates} bg="#F4C430" textInk />
+        <Block label={t('stats.block.total')} value={s.heldTotal} bg="#7B4B9E" />
       </div>
 
       {/* Category breakdown */}
       <div className="flex items-center gap-2.5 pt-2 pb-2">
         <div className="w-1.5 h-5 rounded-sm bg-panini-blue" />
-        <h2 className="font-display text-lg tracking-wide">BY CATEGORY</h2>
+        <h2 className="font-display text-lg tracking-wide">{t('stats.by_category')}</h2>
       </div>
       <ul className="space-y-1.5">
         {s.categories.map((c) => {
@@ -122,7 +124,7 @@ export function Stats() {
 
       <div className="mt-8 flex justify-center">
         <button onClick={() => logout()} className="pill text-panini-red border-panini-red">
-          Sign out
+          {t('auth.sign_out')}
         </button>
       </div>
     </div>
@@ -152,6 +154,7 @@ function Block({
 }
 
 function MissingList({ numbers }: { numbers: number[] }) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const text = useMemo(() => numbers.join(', '), [numbers]);
@@ -160,16 +163,14 @@ function MissingList({ numbers }: { numbers: number[] }) {
     <section className="mt-5">
       <div className="flex items-center gap-2.5 pb-2">
         <div className="w-1.5 h-5 rounded-sm bg-panini-red" />
-        <h2 className="font-display text-lg tracking-wide">MISSING ({numbers.length})</h2>
+        <h2 className="font-display text-lg tracking-wide">
+          {t('stats.missing_count', { n: numbers.length })}
+        </h2>
       </div>
       <div className="card p-3">
         <div className="flex gap-2">
-          <button
-            onClick={() => setOpen((o) => !o)}
-            className="pill flex-1"
-            aria-expanded={open}
-          >
-            {open ? 'Hide list' : 'Show list'}
+          <button onClick={() => setOpen((o) => !o)} className="pill flex-1" aria-expanded={open}>
+            {open ? t('stats.hide_list') : t('stats.show_list')}
           </button>
           <button
             onClick={async () => {
@@ -183,15 +184,15 @@ function MissingList({ numbers }: { numbers: number[] }) {
             }}
             className="pill flex-1 bg-panini-yellow"
           >
-            {copied ? 'Copied!' : 'Copy all'}
+            {copied ? t('stats.copied') : t('stats.copy_all')}
           </button>
         </div>
         {open && (
           <pre
             className="mt-3 font-mono text-[11px] whitespace-pre-wrap break-words bg-panini-cream border-2 border-panini-ink rounded-lg p-3 max-h-72 overflow-auto"
-            aria-label="Missing sticker numbers"
+            aria-label={t('stats.missing_count', { n: numbers.length })}
           >
-            {text || 'None — you have them all!'}
+            {text || t('stats.complete')}
           </pre>
         )}
       </div>

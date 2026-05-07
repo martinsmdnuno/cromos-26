@@ -4,11 +4,13 @@ import { CATEGORIES, PALETTE, TOTAL_STICKERS, type CategoryDef } from '@cromos/s
 import { api } from '../api';
 import { StickerTile } from '../components/StickerTile';
 import { CountEditor } from '../components/CountEditor';
+import { useT } from '../i18n/LangContext';
 
 type Filter = 'all' | 'owned' | 'missing' | 'duplicates';
 
 export function Collection() {
   const qc = useQueryClient();
+  const { t } = useT();
   const collectionQ = useQuery({
     queryKey: ['collection'],
     queryFn: () => api.get<{ collection: Record<number, number> }>('/api/collection'),
@@ -79,10 +81,10 @@ export function Collection() {
     <div className="px-5">
       {/* Stats strip */}
       <div className="grid grid-cols-4 gap-2 mt-3">
-        <Stat num={counts.owned} label="Owned" />
-        <Stat num={counts.missing} label="Missing" />
-        <Stat num={counts.dups} label="Dups" />
-        <Stat num={`${counts.pct}%`} label="Done" highlight />
+        <Stat num={counts.owned} label={t('collection.stat.owned')} />
+        <Stat num={counts.missing} label={t('collection.stat.missing')} />
+        <Stat num={counts.dups} label={t('collection.stat.dups')} />
+        <Stat num={`${counts.pct}%`} label={t('collection.stat.done')} highlight />
       </div>
 
       {/* Progress bar */}
@@ -106,16 +108,16 @@ export function Collection() {
             onClick={() => setFilter(f)}
             className={`pill whitespace-nowrap ${filter === f ? 'pill-active' : ''}`}
           >
-            {f === 'all' ? 'All' : f[0]!.toUpperCase() + f.slice(1)}
+            {t(`collection.filter.${f}`)}
           </button>
         ))}
         <button
           onClick={() => setBulkMode((b) => !b)}
           className={`pill whitespace-nowrap ml-auto ${bulkMode ? 'pill-active' : ''}`}
           aria-pressed={bulkMode}
-          title="Bulk mode: tap many stickers in sequence to mark owned"
+          title={t('collection.bulk_hint')}
         >
-          {bulkMode ? '✓ Bulk' : 'Bulk'}
+          {bulkMode ? t('collection.bulk_active') : t('collection.bulk')}
         </button>
       </div>
 
@@ -124,11 +126,11 @@ export function Collection() {
         <span aria-hidden="true">🔍</span>
         <input
           inputMode="numeric"
-          placeholder="Search sticker number..."
+          placeholder={t('collection.search_placeholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 bg-transparent font-mono text-[12px] focus:outline-none"
-          aria-label="Search by sticker number"
+          aria-label={t('collection.search_aria')}
         />
       </div>
 

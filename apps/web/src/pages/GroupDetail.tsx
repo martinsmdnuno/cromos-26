@@ -5,6 +5,7 @@ import { type TradeSuggestion } from '@cromos/shared';
 import { api } from '../api';
 import { Avatar } from '../components/Avatar';
 import { useAuth } from '../hooks/useAuth';
+import { useT } from '../i18n/LangContext';
 
 interface MemberView {
   userId: string;
@@ -30,6 +31,7 @@ export function GroupDetail() {
   const { id } = useParams();
   const nav = useNavigate();
   const { user } = useAuth();
+  const { t } = useT();
   const qc = useQueryClient();
 
   const detailQ = useQuery({
@@ -69,8 +71,9 @@ export function GroupDetail() {
   );
 
   if (!id) return null;
-  if (detailQ.isLoading) return <div className="px-5 mt-3 label-mono opacity-50">Loading…</div>;
-  if (!detail) return <div className="px-5 mt-3">Group not found</div>;
+  if (detailQ.isLoading)
+    return <div className="px-5 mt-3 label-mono opacity-50">{t('groups.loading')}</div>;
+  if (!detail) return <div className="px-5 mt-3">{t('modal.error.group_not_found')}</div>;
 
   const suggestions = tradesQ.data?.suggestions ?? [];
 
@@ -91,14 +94,16 @@ export function GroupDetail() {
         />
         <div className="relative z-10">
           <Link to="/groups" className="font-mono text-xs">
-            ← Groups
+            {t('group.back')}
           </Link>
           <h1 className="font-display text-4xl leading-none tracking-wide mt-2 uppercase">
             {detail.group.name}
           </h1>
           <div className="mt-2 flex items-center gap-3 font-mono text-xs">
             <span>
-              {detail.members.length} member{detail.members.length === 1 ? '' : 's'}
+              {detail.members.length === 1
+                ? t('groups.member_count_one')
+                : t('groups.member_count_other', { n: detail.members.length })}
             </span>
             <CodePill code={detail.group.code} />
           </div>
@@ -109,7 +114,7 @@ export function GroupDetail() {
         {/* Leaderboard */}
         <div className="flex items-center gap-2.5 pt-4 pb-2.5">
           <div className="w-1.5 h-5 rounded-sm bg-panini-purple" />
-          <h2 className="font-display text-lg tracking-wide">LEADERBOARD</h2>
+          <h2 className="font-display text-lg tracking-wide">{t('group.leaderboard')}</h2>
         </div>
         <ul className="space-y-2">
           {sortedMembers.map((m) => {
@@ -127,7 +132,7 @@ export function GroupDetail() {
                     <span className="truncate">{m.name}</span>
                     {isMe && (
                       <span className="bg-panini-red text-white text-[8px] px-1.5 py-0.5 rounded font-mono tracking-widest">
-                        YOU
+                        {t('group.you_tag')}
                       </span>
                     )}
                   </div>
@@ -138,7 +143,7 @@ export function GroupDetail() {
                     />
                   </div>
                   <div className="label-mono opacity-70 mt-0.5">
-                    {m.owned} owned · {m.duplicates} dups
+                    {t('group.owned_dups', { owned: m.owned, dups: m.duplicates })}
                   </div>
                 </div>
                 <div className="font-display text-2xl leading-none">{Math.round(m.completionPct)}%</div>
@@ -150,19 +155,15 @@ export function GroupDetail() {
         {/* Trade suggestions */}
         <div className="flex items-center gap-2.5 pt-5 pb-2.5">
           <div className="w-1.5 h-5 rounded-sm bg-panini-red" />
-          <h2 className="font-display text-lg tracking-wide">TRADE SUGGESTIONS</h2>
+          <h2 className="font-display text-lg tracking-wide">{t('group.trade_suggestions')}</h2>
         </div>
 
-        {suggestions.length === 0 && (
-          <p className="text-sm opacity-60 mb-4">
-            No balanced trades yet — get more duplicates and check back!
-          </p>
-        )}
+        {suggestions.length === 0 && <p className="text-sm opacity-60 mb-4">{t('group.no_trades')}</p>}
 
         <ul className="space-y-2.5">
-          {suggestions.slice(0, 20).map((t, i) => (
+          {suggestions.slice(0, 20).map((s, i) => (
             <li key={i}>
-              <TradeCard t={t} />
+              <TradeCard trade={s} />
             </li>
           ))}
         </ul>
@@ -172,19 +173,19 @@ export function GroupDetail() {
           <button
             className="pill flex-1"
             onClick={() => {
-              if (confirm('Leave this group?')) leave.mutate();
+              if (confirm(t('group.confirm_leave'))) leave.mutate();
             }}
           >
-            Leave group
+            {t('group.leave')}
           </button>
           {isCreator && (
             <button
               className="pill flex-1 !border-panini-red text-panini-red"
               onClick={() => {
-                if (confirm('Delete this group for everyone? This cannot be undone.')) del.mutate();
+                if (confirm(t('group.confirm_delete'))) del.mutate();
               }}
             >
-              Delete group
+              {t('group.delete')}
             </button>
           )}
         </div>
@@ -194,6 +195,7 @@ export function GroupDetail() {
 }
 
 function CodePill({ code }: { code: string }) {
+  const { t } = useT();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -207,39 +209,48 @@ function CodePill({ code }: { code: string }) {
         }
       }}
       className="font-mono font-bold tracking-[0.2em] border-2 border-dashed border-white/80 rounded-pill px-2.5 py-0.5 hover:bg-white/10"
-      aria-label={`Invite code ${code}, click to copy`}
+      aria-label={t('group.copy_code_aria', { code })}
     >
-      {copied ? 'COPIED!' : code}
+      {copied ? t('group.copied') : code}
     </button>
   );
 }
 
-function TradeCard({ t }: { t: TradeSuggestion }) {
+function TradeCard({ trade }: { trade: TradeSuggestion }) {
+  const { t } = useT();
   const limit = 4;
-  const aPreview = t.aGives.slice(0, limit);
-  const aRest = t.aGives.length - aPreview.length;
-  const bPreview = t.bGives.slice(0, limit);
-  const bRest = t.bGives.length - bPreview.length;
+  const aPreview = trade.aGives.slice(0, limit);
+  const aRest = trade.aGives.length - aPreview.length;
+  const bPreview = trade.bGives.slice(0, limit);
+  const bRest = trade.bGives.length - bPreview.length;
 
   return (
     <article
-      className={`card overflow-hidden ${t.involvesMe ? 'border-3 border-panini-red' : ''}`}
+      className={`card overflow-hidden ${trade.involvesMe ? 'border-3 border-panini-red' : ''}`}
     >
-      <header
-        className="bg-panini-yellow border-b-2 border-panini-ink px-3 py-2 flex items-center justify-between"
-      >
+      <header className="bg-panini-yellow border-b-2 border-panini-ink px-3 py-2 flex items-center justify-between">
         <div className="flex items-center gap-2 font-bold text-sm">
-          <span>{t.aName}</span>
+          <span>{trade.aName}</span>
           <span className="text-panini-red text-base">↔</span>
-          <span>{t.bName}</span>
+          <span>{trade.bName}</span>
         </div>
         <span className="bg-panini-ink text-panini-yellow font-mono text-[11px] font-bold px-2 py-0.5 rounded-pill tracking-widest">
-          {t.count} EACH
+          {t('group.trade_each', { n: trade.count })}
         </span>
       </header>
       <div className="grid grid-cols-2 gap-px bg-panini-ink">
-        <TradeSide title={`${t.aName.toUpperCase()} GIVES`} numbers={aPreview} extra={aRest} variant="give" />
-        <TradeSide title={`${t.bName.toUpperCase()} GIVES`} numbers={bPreview} extra={bRest} variant="get" />
+        <TradeSide
+          title={`${trade.aName.toUpperCase()} ${t('group.gives')}`}
+          numbers={aPreview}
+          extra={aRest}
+          variant="give"
+        />
+        <TradeSide
+          title={`${trade.bName.toUpperCase()} ${t('group.gives')}`}
+          numbers={bPreview}
+          extra={bRest}
+          variant="get"
+        />
       </div>
     </article>
   );

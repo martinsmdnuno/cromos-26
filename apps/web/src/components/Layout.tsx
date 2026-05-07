@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { Logo } from './Logo';
 import { BottomTabBar, TopTabBar } from './TabBar';
 import { Avatar } from './Avatar';
+import { LangToggle } from './LangToggle';
 import { useAuth } from '../hooks/useAuth';
 
 /**
@@ -15,9 +16,12 @@ export function Layout() {
   return (
     <div className="min-h-full bg-panini-cream flex flex-col">
       <header className="px-5 pt-3 pb-3 max-w-[800px] mx-auto w-full">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center gap-2">
           <Logo />
-          {user && <Avatar name={user.name} color="#7B4B9E" />}
+          <div className="flex items-center gap-2">
+            <LangToggle />
+            {user && <Avatar name={user.name} color="#7B4B9E" />}
+          </div>
         </div>
         {/* Top tab bar only on tablet+ */}
         <div className="mt-3 hidden md:block">

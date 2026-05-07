@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useT } from '../i18n/LangContext';
 
 interface Props {
   number: number;
@@ -12,6 +13,7 @@ interface Props {
  * Quick buttons for 0/1/2/3, plus +/− and a numeric input for higher counts.
  */
 export function CountEditor({ number, count, onSave, onClose }: Props) {
+  const { t } = useT();
   const [value, setValue] = useState(count);
   useEffect(() => setValue(count), [count]);
 
@@ -20,21 +22,18 @@ export function CountEditor({ number, count, onSave, onClose }: Props) {
       className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
-      aria-label={`Edit sticker ${number}`}
+      aria-label={t('sticker.title', { n: number })}
       onClick={onClose}
     >
-      <div
-        className="card w-full max-w-sm p-5"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="card w-full max-w-sm p-5" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-2xl">STICKER #{number}</h2>
+          <h2 className="font-display text-2xl">{t('sticker.title', { n: number })}</h2>
           <button
             className="label-mono text-panini-ink/70 hover:text-panini-ink"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('sticker.close')}
           >
-            CLOSE
+            {t('sticker.close')}
           </button>
         </div>
 
@@ -42,7 +41,7 @@ export function CountEditor({ number, count, onSave, onClose }: Props) {
           <button
             className="pill w-12 h-12 text-xl"
             onClick={() => setValue((v) => Math.max(0, v - 1))}
-            aria-label="Decrement"
+            aria-label={t('sticker.decrement')}
           >
             −
           </button>
@@ -56,12 +55,12 @@ export function CountEditor({ number, count, onSave, onClose }: Props) {
               if (Number.isFinite(n) && n >= 0 && n <= 99) setValue(Math.floor(n));
             }}
             className="font-display text-5xl text-center w-24 border-2 border-panini-ink rounded-xl py-2 bg-panini-cream"
-            aria-label="Count"
+            aria-label={t('sticker.count_aria')}
           />
           <button
             className="pill w-12 h-12 text-xl"
             onClick={() => setValue((v) => Math.min(99, v + 1))}
-            aria-label="Increment"
+            aria-label={t('sticker.increment')}
           >
             +
           </button>
@@ -74,7 +73,7 @@ export function CountEditor({ number, count, onSave, onClose }: Props) {
               className={`pill ${value === n ? 'pill-active' : ''}`}
               onClick={() => setValue(n)}
             >
-              {n === 0 ? 'None' : n === 1 ? 'Owned' : `×${n}`}
+              {n === 0 ? t('sticker.preset.none') : n === 1 ? t('sticker.preset.owned') : `×${n}`}
             </button>
           ))}
         </div>
@@ -83,7 +82,7 @@ export function CountEditor({ number, count, onSave, onClose }: Props) {
           className="mt-5 w-full bg-panini-ink text-white border-2 border-panini-ink rounded-pill py-3 font-bold"
           onClick={() => onSave(value)}
         >
-          SAVE
+          {t('sticker.save')}
         </button>
       </div>
     </div>

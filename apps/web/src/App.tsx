@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
+import { LangProvider } from './i18n/LangContext';
 import { Layout } from './components/Layout';
 import { Onboarding } from './pages/Onboarding';
 import { Collection } from './pages/Collection';
@@ -10,9 +11,11 @@ import { Stats } from './pages/Stats';
 
 export function App() {
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <LangProvider>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </LangProvider>
   );
 }
 

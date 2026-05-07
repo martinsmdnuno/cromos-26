@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
 import { categoryForSticker } from '@cromos/shared';
 import { useAuth } from '../hooks/useAuth';
+import { useT } from '../i18n/LangContext';
 
 interface GroupListItem {
   id: string;
@@ -28,6 +29,7 @@ interface DirectResult {
  */
 export function Trades() {
   const { user } = useAuth();
+  const { t } = useT();
   const [groupId, setGroupId] = useState<string | null>(null);
   const [otherId, setOtherId] = useState<string | null>(null);
 
@@ -53,12 +55,12 @@ export function Trades() {
     <div className="px-5 mt-3">
       <div className="flex items-center gap-2.5 pb-2">
         <div className="w-1.5 h-6 rounded-sm bg-panini-teal" />
-        <h2 className="font-display text-lg tracking-wide">DIRECT TRADES</h2>
+        <h2 className="font-display text-lg tracking-wide">{t('trades.title')}</h2>
       </div>
 
       {/* Group picker */}
       <div className="space-y-2">
-        <label className="block label-mono opacity-70">GROUP</label>
+        <label className="block label-mono opacity-70">{t('trades.label_group')}</label>
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
           {(groupsQ.data?.groups ?? []).map((g) => (
             <button
@@ -78,7 +80,7 @@ export function Trades() {
       {/* Friend picker */}
       {groupId && (
         <div className="space-y-2 mt-3">
-          <label className="block label-mono opacity-70">FRIEND</label>
+          <label className="block label-mono opacity-70">{t('trades.label_friend')}</label>
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             {others.map((m) => (
               <button
@@ -90,7 +92,7 @@ export function Trades() {
               </button>
             ))}
             {others.length === 0 && (
-              <span className="text-sm opacity-60">No other members in this group yet.</span>
+              <span className="text-sm opacity-60">{t('trades.no_others')}</span>
             )}
           </div>
         </div>
@@ -100,25 +102,21 @@ export function Trades() {
       {groupId && otherId && (
         <div className="mt-5 grid gap-3">
           <ResultPanel
-            title="YOU CAN GIVE"
-            sub="Your duplicates they're missing"
+            title={t('trades.you_can_give')}
+            sub={t('trades.your_dups')}
             numbers={directQ.data?.iCanGive ?? []}
             color="#6FBE44"
           />
           <ResultPanel
-            title="THEY CAN GIVE"
-            sub="Their duplicates you're missing"
+            title={t('trades.they_can_give')}
+            sub={t('trades.their_dups')}
             numbers={directQ.data?.theyCanGive ?? []}
             color="#2FB8AB"
           />
         </div>
       )}
 
-      {!groupId && (
-        <p className="text-sm opacity-60 mt-6">
-          Pick a group above to see who you can trade with.
-        </p>
-      )}
+      {!groupId && <p className="text-sm opacity-60 mt-6">{t('trades.pick_group_hint')}</p>}
     </div>
   );
 }
@@ -134,6 +132,7 @@ function ResultPanel({
   numbers: number[];
   color: string;
 }) {
+  const { t } = useT();
   const groups = useMemo(() => {
     const out = new Map<string, { name: string; emoji: string; nums: number[] }>();
     for (const n of numbers) {
@@ -154,11 +153,13 @@ function ResultPanel({
         <h3 className="font-display text-lg" style={{ color: '#1A1A1A' }}>
           {title}
         </h3>
-        <span className="font-mono text-[10px] opacity-60">{numbers.length} STICKERS</span>
+        <span className="font-mono text-[10px] opacity-60">
+          {t('trades.sticker_count', { n: numbers.length })}
+        </span>
       </div>
       <p className="label-mono opacity-60 mb-2">{sub}</p>
       {numbers.length === 0 && (
-        <p className="text-sm opacity-50">Nothing balanced here yet.</p>
+        <p className="text-sm opacity-50">{t('trades.empty_balanced')}</p>
       )}
       <div className="space-y-2">
         {groups.map((g) => (
