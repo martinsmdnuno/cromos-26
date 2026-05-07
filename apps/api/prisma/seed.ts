@@ -4,7 +4,7 @@
  */
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { generateInviteCode, TOTAL_STICKERS } from '../../../packages/shared/src/index.js';
+import { generateInviteCode, TOTAL_STICKERS } from '@cromos/shared';
 
 const prisma = new PrismaClient();
 
