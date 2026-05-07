@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cromos 26 — Mockup: Group Detail</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --panini-red:    #E63027;
+    --panini-orange: #F2812A;
+    --panini-yellow: #F4C430;
+    --panini-green:  #6FBE44;
+    --panini-teal:   #2FB8AB;
+    --panini-blue:   #2E6FB8;
+    --panini-navy:   #1B3A6B;
+    --panini-purple: #7B4B9E;
+    --panini-cream:  #F5E6D3;
+    --panini-ink:    #1A1A1A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #2a2a2a;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 30px;
+  }
+  .label {
+    color: #999;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .phone {
+    width: 390px;
+    background: var(--panini-cream);
+    border-radius: 36px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    border: 8px solid #1a1a1a;
+  }
+  .phone-inner { height: 800px; overflow: hidden; }
+  .status {
+    height: 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--panini-ink);
+  }
+  /* group hero */
+  .group-hero {
+    background: var(--panini-blue);
+    color: #fff;
+    padding: 16px 20px 18px;
+    border-bottom: 3px solid var(--panini-ink);
+    position: relative;
+    overflow: hidden;
+  }
+  .group-hero::before {
+    content: '';
+    position: absolute;
+    right: -30px;
+    top: -30px;
+    width: 140px;
+    height: 140px;
+    background: var(--panini-yellow);
+    border-radius: 50%;
+    opacity: 0.4;
+  }
+  .group-hero::after {
+    content: '';
+    position: absolute;
+    right: 40px;
+    bottom: -40px;
+    width: 80px;
+    height: 80px;
+    background: var(--panini-red);
+    border-radius: 50%;
+    opacity: 0.5;
+  }
+  .back {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #fff;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 2;
+  }
+  .group-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 36px;
+    line-height: 0.95;
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 2;
+  }
+  .group-meta {
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .code-pill {
+    background: rgba(255,255,255,0.2);
+    border: 2px dashed #fff;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  /* leaderboard */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 20px 10px;
+  }
+  .section-title .flag {
+    width: 6px;
+    height: 22px;
+    background: var(--panini-ink);
+    border-radius: 2px;
+  }
+  .section-title h3 {
+    font-family: 'Anton', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+  .leaderboard {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .member {
+    background: #fff;
+    border: 2px solid var(--panini-ink);
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .member.you { border-color: var(--panini-red); border-width: 3px; }
+  .member-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--panini-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .a1 { background: var(--panini-red); }
+  .a2 { background: var(--panini-blue); }
+  .a3 { background: var(--panini-green); color: var(--panini-ink); }
+  .a4 { background: var(--panini-purple); }
+  .member-info { flex: 1; min-width: 0; }
+  .member-name {
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .you-tag {
+    background: var(--panini-red);
+    color: #fff;
+    font-size: 8px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+  }
+  .member-bar {
+    height: 6px;
+    background: var(--panini-cream);
+    border: 1.5px solid var(--panini-ink);
+    border-radius: 4px;
+    margin-top: 4px;
+    overflow: hidden;
+  }
+  .member-fill {
+    height: 100%;
+  }
+  .member-stats {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--panini-ink);
+    opacity: 0.7;
+    margin-top: 3px;
+  }
+  .pct {
+    font-family: 'Anton', sans-serif;
+    font-size: 22px;
+    line-height: 1;
+  }
+  /* trades */
+  .trade-card {
+    margin: 0 20px 10px;
+    background: #fff;
+    border: 2px solid var(--panini-ink);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .trade-card.highlight {
+    border-color: var(--panini-red);
+    border-width: 3px;
+  }
+  .trade-header {
+    background: var(--panini-yellow);
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--panini-ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .trade-pair {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .trade-pair .arrow {
+    font-size: 16px;
+    color: var(--panini-red);
+  }
+  .trade-score {
+    background: var(--panini-ink);
+    color: var(--panini-yellow);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    letter-spacing: 1px;
+  }
+  .trade-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--panini-ink);
+  }
+  .trade-side {
+    background: #fff;
+    padding: 8px 10px;
+  }
+  .trade-side .heading {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--panini-ink);
+    opacity: 0.6;
+    margin-bottom: 6px;
+  }
+  .chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  .num-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1.5px solid var(--panini-ink);
+  }
+  .num-chip.give { background: var(--panini-green); color: var(--panini-ink); }
+  .num-chip.get { background: var(--panini-teal); color: var(--panini-ink); }
+
+  .annotation {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 12px;
+    max-width: 320px;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 14px;
+  }
+  .annotation strong { color: var(--panini-yellow); }
+  .annotation .tag {
+    display: inline-block;
+    background: var(--panini-red);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div>
+    <div class="label">SCREEN 02 · GROUP DETAIL + TRADE OPTIMIZER</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status"><span>9:41</span><span>● ●● 100%</span></div>
+
+        <div class="group-hero">
+          <div class="back">← Groups</div>
+          <div class="group-title">CAFÉ<br>FRIENDS</div>
+          <div class="group-meta">
+            <span>4 members</span>
+            <span class="code-pill">7K3M9X</span>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <div class="flag" style="background: var(--panini-purple)"></div>
+          <h3>LEADERBOARD</h3>
+        </div>
+        <div class="leaderboard">
+          <div class="member you">
+            <div class="member-avatar a1">JD</div>
+            <div class="member-info">
+              <div class="member-name">João <span class="you-tag">YOU</span></div>
+              <div class="member-bar"><div class="member-fill" style="width: 47%; background: var(--panini-red)"></div></div>
+              <div class="member-stats">347 owned · 52 dups</div>
+            </div>
+            <div class="pct">47%</div>
+          </div>
+          <div class="member">
+            <div class="member-avatar a2">MR</div>
+            <div class="member-info">
+              <div class="member-name">Maria</div>
+              <div class="member-bar"><div class="member-fill" style="width: 62%; background: var(--panini-blue)"></div></div>
+              <div class="member-stats">461 owned · 78 dups</div>
+            </div>
+            <div class="pct">62%</div>
+          </div>
+          <div class="member">
+            <div class="member-avatar a3">PS</div>
+            <div class="member-info">
+              <div class="member-name">Pedro</div>
+              <div class="member-bar"><div class="member-fill" style="width: 38%; background: var(--panini-green)"></div></div>
+              <div class="member-stats">283 owned · 41 dups</div>
+            </div>
+            <div class="pct">38%</div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <div class="flag" style="background: var(--panini-red)"></div>
+          <h3>TRADE SUGGESTIONS</h3>
+        </div>
+
+        <div class="trade-card highlight">
+          <div class="trade-header">
+            <div class="trade-pair">
+              <span>João</span>
+              <span class="arrow">↔</span>
+              <span>Maria</span>
+            </div>
+            <div class="trade-score">12 EACH</div>
+          </div>
+          <div class="trade-body">
+            <div class="trade-side">
+              <div class="heading">JOÃO GIVES</div>
+              <div class="chip-list">
+                <span class="num-chip give">#43</span>
+                <span class="num-chip give">#127</span>
+                <span class="num-chip give">#205</span>
+                <span class="num-chip give">#318</span>
+                <span class="num-chip give">+8</span>
+              </div>
+            </div>
+            <div class="trade-side">
+              <div class="heading">MARIA GIVES</div>
+              <div class="chip-list">
+                <span class="num-chip get">#94</span>
+                <span class="num-chip get">#156</span>
+                <span class="num-chip get">#272</span>
+                <span class="num-chip get">#401</span>
+                <span class="num-chip get">+8</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="trade-card highlight">
+          <div class="trade-header">
+            <div class="trade-pair">
+              <span>João</span>
+              <span class="arrow">↔</span>
+              <span>Pedro</span>
+            </div>
+            <div class="trade-score">7 EACH</div>
+          </div>
+          <div class="trade-body">
+            <div class="trade-side">
+              <div class="heading">JOÃO GIVES</div>
+              <div class="chip-list">
+                <span class="num-chip give">#22</span>
+                <span class="num-chip give">#89</span>
+                <span class="num-chip give">#240</span>
+                <span class="num-chip give">+4</span>
+              </div>
+            </div>
+            <div class="trade-side">
+              <div class="heading">PEDRO GIVES</div>
+              <div class="chip-list">
+                <span class="num-chip get">#108</span>
+                <span class="num-chip get">#310</span>
+                <span class="num-chip get">+5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotation">
+      <span class="tag">Key details</span><br>
+      <strong>Group hero</strong>: bold solid color block with decorative geometric shapes (echoes album cover quilt).<br>
+      <strong>Trade card</strong>: yellow header bar + black divider creates a poster/ticket feel.<br>
+      <strong>Number chips</strong>: monospace, thin black border, paired green (give) / teal (receive) colors.<br>
+      <strong>Highlight trades</strong> involving the user with thicker red border.
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cromos 26 — Mockup: Stats</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --panini-red:    #E63027;
+    --panini-orange: #F2812A;
+    --panini-yellow: #F4C430;
+    --panini-green:  #6FBE44;
+    --panini-teal:   #2FB8AB;
+    --panini-blue:   #2E6FB8;
+    --panini-navy:   #1B3A6B;
+    --panini-purple: #7B4B9E;
+    --panini-cream:  #F5E6D3;
+    --panini-ink:    #1A1A1A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #2a2a2a;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 30px;
+  }
+  .label {
+    color: #999;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .phone {
+    width: 390px;
+    background: var(--panini-cream);
+    border-radius: 36px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    border: 8px solid #1a1a1a;
+  }
+  .phone-inner { height: 800px; overflow: hidden; }
+  .status {
+    height: 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--panini-ink);
+  }
+  .header-bar {
+    padding: 8px 20px 14px;
+  }
+  .header-bar h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: 36px;
+    letter-spacing: 1px;
+  }
+
+  /* hero number — replicates "26" energy from album cover */
+  .hero {
+    margin: 0 20px 18px;
+    background: var(--panini-cream);
+    border: 3px solid var(--panini-ink);
+    border-radius: 20px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  /* decorative quilt background */
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .hero-bg .shape1 {
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 120px;
+    height: 120px;
+    background: var(--panini-red);
+    border-radius: 50%;
+  }
+  .hero-bg .shape2 {
+    position: absolute;
+    bottom: -20px;
+    right: 60px;
+    width: 80px;
+    height: 80px;
+    background: var(--panini-yellow);
+    border-radius: 50%;
+  }
+  .hero-bg .shape3 {
+    position: absolute;
+    top: 30px;
+    right: 80px;
+    width: 60px;
+    height: 60px;
+    background: var(--panini-blue);
+  }
+  .hero-content {
+    position: relative;
+    z-index: 1;
+  }
+  .hero-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--panini-ink);
+    opacity: 0.7;
+    margin-bottom: 4px;
+  }
+  .hero-num {
+    font-family: 'Anton', sans-serif;
+    font-size: 110px;
+    line-height: 0.85;
+    letter-spacing: -4px;
+    color: var(--panini-ink);
+  }
+  .hero-num .pct-symbol {
+    font-size: 60px;
+    color: var(--panini-red);
+  }
+  .hero-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    margin-top: 6px;
+    font-weight: 700;
+  }
+
+  /* stat blocks — 4 colored blocks like quilt */
+  .stat-grid {
+    margin: 0 20px 18px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .stat-block {
+    border: 3px solid var(--panini-ink);
+    border-radius: 14px;
+    padding: 14px;
+    color: var(--panini-ink);
+  }
+  .stat-block .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .stat-block .num {
+    font-family: 'Anton', sans-serif;
+    font-size: 44px;
+    line-height: 0.9;
+    margin-top: 4px;
+  }
+  .stat-block.green { background: var(--panini-green); }
+  .stat-block.red { background: var(--panini-red); color: #fff; }
+  .stat-block.yellow { background: var(--panini-yellow); }
+  .stat-block.purple { background: var(--panini-purple); color: #fff; }
+
+  /* category breakdown */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 20px 10px;
+  }
+  .section-title .flag {
+    width: 6px;
+    height: 22px;
+    background: var(--panini-ink);
+    border-radius: 2px;
+  }
+  .section-title h3 {
+    font-family: 'Anton', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+  .cat-list {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cat-row {
+    background: #fff;
+    border: 2px solid var(--panini-ink);
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cat-swatch {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--panini-ink);
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .cat-name {
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+    width: 90px;
+  }
+  .cat-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--panini-cream);
+    border: 1.5px solid var(--panini-ink);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .cat-fill { height: 100%; }
+  .cat-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    width: 50px;
+    text-align: right;
+  }
+
+  .annotation {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 12px;
+    max-width: 320px;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 14px;
+  }
+  .annotation strong { color: var(--panini-yellow); }
+  .annotation .tag {
+    display: inline-block;
+    background: var(--panini-red);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div>
+    <div class="label">SCREEN 03 · STATS / DASHBOARD</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status"><span>9:41</span><span>● ●● 100%</span></div>
+
+        <div class="header-bar">
+          <h1>YOUR PROGRESS</h1>
+        </div>
+
+        <div class="hero">
+          <div class="hero-bg">
+            <div class="shape1"></div>
+            <div class="shape2"></div>
+            <div class="shape3"></div>
+          </div>
+          <div class="hero-content">
+            <div class="hero-tag">Album completion</div>
+            <div class="hero-num">47<span class="pct-symbol">%</span></div>
+            <div class="hero-sub">347 / 744 stickers</div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-block green">
+            <div class="lbl">Owned</div>
+            <div class="num">347</div>
+          </div>
+          <div class="stat-block red">
+            <div class="lbl">Missing</div>
+            <div class="num">397</div>
+          </div>
+          <div class="stat-block yellow">
+            <div class="lbl">Duplicates</div>
+            <div class="num">52</div>
+          </div>
+          <div class="stat-block purple">
+            <div class="lbl">Total</div>
+            <div class="num">399</div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <div class="flag" style="background: var(--panini-blue)"></div>
+          <h3>BY CATEGORY</h3>
+        </div>
+        <div class="cat-list">
+          <div class="cat-row">
+            <div class="cat-swatch" style="background: var(--panini-red)"></div>
+            <div class="cat-name">Portugal</div>
+            <div class="cat-bar"><div class="cat-fill" style="width: 60%; background: var(--panini-red)"></div></div>
+            <div class="cat-count">12/20</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-swatch" style="background: var(--panini-yellow)"></div>
+            <div class="cat-name">Brasil</div>
+            <div class="cat-bar"><div class="cat-fill" style="width: 40%; background: var(--panini-yellow)"></div></div>
+            <div class="cat-count">8/20</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-swatch" style="background: var(--panini-blue)"></div>
+            <div class="cat-name">França</div>
+            <div class="cat-bar"><div class="cat-fill" style="width: 75%; background: var(--panini-blue)"></div></div>
+            <div class="cat-count">15/20</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-swatch" style="background: var(--panini-green)"></div>
+            <div class="cat-name">Senegal</div>
+            <div class="cat-bar"><div class="cat-fill" style="width: 30%; background: var(--panini-green)"></div></div>
+            <div class="cat-count">6/20</div>
+          </div>
+          <div class="cat-row">
+            <div class="cat-swatch" style="background: var(--panini-purple)"></div>
+            <div class="cat-name">Legends</div>
+            <div class="cat-bar"><div class="cat-fill" style="width: 22%; background: var(--panini-purple)"></div></div>
+            <div class="cat-count">11/50</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotation">
+      <span class="tag">Key details</span><br>
+      <strong>Hero number</strong> uses Anton at 110px — same energy as the "26" on the album cover.<br>
+      <strong>Decorative shapes</strong> (circle, square, semi-circle) inside the hero — the album quilt motif.<br>
+      <strong>4 stat blocks</strong> in distinct primary colors — flat, bold, no gradients, thick black borders.<br>
+      <strong>Category rows</strong> use the team color as both swatch and progress fill — visually consistent with sticker tiles.
+    </div>
+  </div>
+</body>
+</html>

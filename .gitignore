@@ -1,0 +1,48 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# build output
+dist
+build
+.next
+.turbo
+
+# env (only commit .env.example)
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# coverage
+coverage
+*.lcov
+.nyc_output
+
+# OS
+.DS_Store
+Thumbs.db
+
+# editor
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+
+# Docker volumes
+postgres-data
+caddy-data
+caddy-config
+
+# Prisma generated client (regenerated on install)
+apps/api/node_modules/.prisma
+
+# Backups
+backups
+*.sql.gz

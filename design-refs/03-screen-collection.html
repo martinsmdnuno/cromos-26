@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cromos 26 — Mockup: Collection</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --panini-red:    #E63027;
+    --panini-orange: #F2812A;
+    --panini-yellow: #F4C430;
+    --panini-green:  #6FBE44;
+    --panini-teal:   #2FB8AB;
+    --panini-blue:   #2E6FB8;
+    --panini-navy:   #1B3A6B;
+    --panini-purple: #7B4B9E;
+    --panini-cream:  #F5E6D3;
+    --panini-ink:    #1A1A1A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #2a2a2a;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+  .label {
+    color: #999;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .phone {
+    width: 390px;
+    background: var(--panini-cream);
+    border-radius: 36px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    border: 8px solid #1a1a1a;
+  }
+  .phone-inner {
+    height: 800px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  /* status bar */
+  .status {
+    height: 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--panini-ink);
+    font-size: 13px;
+  }
+  /* header */
+  .header {
+    padding: 8px 20px 16px;
+    background: var(--panini-cream);
+  }
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .wordmark {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .wordmark .logo-26 {
+    font-family: 'Anton', sans-serif;
+    font-size: 38px;
+    line-height: 0.85;
+    letter-spacing: -2px;
+  }
+  .wordmark .logo-26 .red { color: var(--panini-red); }
+  .wordmark .logo-26 .blue { color: var(--panini-blue); }
+  .wordmark .label-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--panini-ink);
+    letter-spacing: 2px;
+    font-weight: 700;
+    transform: translateY(-4px);
+  }
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--panini-purple);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border: 2px solid var(--panini-ink);
+  }
+  /* tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-top: 14px;
+    background: #fff;
+    border: 2px solid var(--panini-ink);
+    border-radius: 14px;
+    padding: 4px;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 10px;
+    color: var(--panini-ink);
+    cursor: pointer;
+  }
+  .tab.active {
+    background: var(--panini-ink);
+    color: #fff;
+  }
+  /* stats strip */
+  .stats-strip {
+    padding: 14px 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .stat {
+    background: #fff;
+    border: 2px solid var(--panini-ink);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: left;
+  }
+  .stat .num {
+    font-family: 'Anton', sans-serif;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--panini-ink);
+  }
+  .stat .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 1px;
+    color: var(--panini-ink);
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-top: 4px;
+  }
+  .stat.complete { background: var(--panini-yellow); }
+  .stat.complete .num { color: var(--panini-ink); }
+  /* progress bar */
+  .progress {
+    margin: 4px 20px 12px;
+    height: 8px;
+    background: #fff;
+    border: 2px solid var(--panini-ink);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 47%;
+    background: linear-gradient(90deg, var(--panini-red), var(--panini-orange), var(--panini-yellow));
+  }
+  /* filter chips */
+  .chips {
+    padding: 0 20px 12px;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+  }
+  .chip {
+    padding: 6px 12px;
+    border: 2px solid var(--panini-ink);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #fff;
+    white-space: nowrap;
+  }
+  .chip.active { background: var(--panini-ink); color: #fff; }
+  /* search */
+  .search {
+    margin: 0 20px 12px;
+    background: #fff;
+    border: 2px solid var(--panini-ink);
+    border-radius: 12px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #999;
+  }
+  /* category section header */
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px 6px;
+  }
+  .category-flag {
+    width: 6px;
+    height: 24px;
+    background: var(--panini-red);
+    border-radius: 2px;
+  }
+  .category-name {
+    font-family: 'Anton', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: var(--panini-ink);
+  }
+  .category-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--panini-ink);
+    opacity: 0.6;
+    margin-left: auto;
+  }
+  /* sticker grid */
+  .stickers {
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+  .sticker {
+    aspect-ratio: 2/3;
+    border-radius: 8px;
+    border: 2px solid var(--panini-ink);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .sticker.missing {
+    background: #fff;
+    border-style: dashed;
+    color: #aaa;
+  }
+  .sticker.owned {
+    background: var(--panini-red);
+    color: #fff;
+  }
+  .sticker.owned.team-2 { background: var(--panini-yellow); color: var(--panini-ink); }
+  .sticker.owned.team-3 { background: var(--panini-blue); color: #fff; }
+  .sticker.owned.team-4 { background: var(--panini-green); color: var(--panini-ink); }
+  .sticker.dup::after {
+    content: '×2';
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--panini-orange);
+    color: var(--panini-ink);
+    border: 2px solid var(--panini-ink);
+    border-radius: 999px;
+    padding: 1px 5px;
+    font-size: 9px;
+    font-weight: 700;
+  }
+  .sticker .check {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    font-size: 10px;
+  }
+  /* annotation */
+  .annotation {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 12px;
+    max-width: 320px;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 14px;
+  }
+  .annotation strong { color: var(--panini-yellow); }
+  .annotation .tag {
+    display: inline-block;
+    background: var(--panini-red);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div>
+    <div class="label">SCREEN 01 · MY COLLECTION</div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="status"><span>9:41</span><span>● ●● 100%</span></div>
+
+        <div class="header">
+          <div class="top-row">
+            <div class="wordmark">
+              <span class="logo-26"><span class="red">2</span><span class="blue">6</span></span>
+              <span class="label-text">CROMOS</span>
+            </div>
+            <div class="avatar">JD</div>
+          </div>
+          <div class="tabs">
+            <div class="tab active">Collection</div>
+            <div class="tab">Groups</div>
+            <div class="tab">Trades</div>
+            <div class="tab">Stats</div>
+          </div>
+        </div>
+
+        <div class="stats-strip">
+          <div class="stat"><div class="num">347</div><div class="lbl">Owned</div></div>
+          <div class="stat"><div class="num">397</div><div class="lbl">Missing</div></div>
+          <div class="stat"><div class="num">52</div><div class="lbl">Dups</div></div>
+          <div class="stat complete"><div class="num">47%</div><div class="lbl">Done</div></div>
+        </div>
+
+        <div class="progress"><div class="progress-fill"></div></div>
+
+        <div class="chips">
+          <div class="chip active">All</div>
+          <div class="chip">Owned</div>
+          <div class="chip">Missing</div>
+          <div class="chip">Duplicates</div>
+        </div>
+
+        <div class="search">🔍 Search sticker number...</div>
+
+        <div class="category-header">
+          <div class="category-flag" style="background: var(--panini-red)"></div>
+          <div class="category-name">PORTUGAL</div>
+          <div class="category-count">12/20</div>
+        </div>
+
+        <div class="stickers">
+          <div class="sticker owned">91</div>
+          <div class="sticker owned">92</div>
+          <div class="sticker owned dup">93</div>
+          <div class="sticker missing">94</div>
+          <div class="sticker owned">95</div>
+          <div class="sticker owned">96</div>
+          <div class="sticker missing">97</div>
+          <div class="sticker owned dup">98</div>
+          <div class="sticker owned">99</div>
+          <div class="sticker missing">100</div>
+        </div>
+
+        <div class="category-header">
+          <div class="category-flag" style="background: var(--panini-yellow)"></div>
+          <div class="category-name">BRASIL</div>
+          <div class="category-count">8/20</div>
+        </div>
+
+        <div class="stickers">
+          <div class="sticker owned team-2">71</div>
+          <div class="sticker missing">72</div>
+          <div class="sticker owned team-2 dup">73</div>
+          <div class="sticker owned team-2">74</div>
+          <div class="sticker missing">75</div>
+        </div>
+      </div>
+    </div>
+    <div class="annotation">
+      <span class="tag">Key details</span><br>
+      <strong>Cream background</strong> (#F5E6D3) — never pure white.<br>
+      <strong>2-3px solid black borders</strong> on every card. No shadows.<br>
+      <strong>Sticker tiles</strong>: solid team color when owned, dashed border when missing, orange ×N badge for duplicates.<br>
+      <strong>Category headers</strong> with colored flag tab + Anton display font.
+    </div>
+  </div>
+</body>
+</html>
