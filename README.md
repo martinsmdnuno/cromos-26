@@ -137,12 +137,12 @@ renders but clicking it 404s. To enable it:
      ```
      http://localhost:5173
      http://localhost:3000
-     https://yourdomain.com
+     https://stickers.martinsnuno.com
      ```
    - Authorised redirect URIs:
      ```
      http://localhost:3000/api/auth/google/callback
-     https://yourdomain.com/api/auth/google/callback
+     https://stickers.martinsnuno.com/api/auth/google/callback
      ```
 4. Copy the **Client ID** and **Client secret** into your `.env` (dev) or
    `.env.production` (prod):

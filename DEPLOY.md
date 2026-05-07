@@ -1,11 +1,13 @@
 # DEPLOY.md — Cromos 26 on Hetzner Cloud
 
-Complete, copy-pasteable guide to deploying Cromos 26 to a fresh Hetzner Cloud VPS with a
-custom `.com` domain you already own. The whole stack (Postgres, API, web, Caddy) runs in
-Docker, fronted by Caddy with automatic Let's Encrypt TLS.
+Complete, copy-pasteable guide to deploying Cromos 26 to a fresh Hetzner Cloud VPS at
+**`stickers.martinsnuno.com`** (subdomain of `martinsnuno.com`, DNS managed by Cloudflare).
+The whole stack (Postgres, API, web, Caddy) runs in Docker, fronted by Caddy with automatic
+Let's Encrypt TLS.
 
-> Before you start, replace **`yourdomain.com`** everywhere below — including in `Caddyfile`
-> and the `.env.production` you'll create — with your actual domain.
+> The Caddyfile is already configured for `stickers.martinsnuno.com`. If you ever switch
+> domains, search/replace it in `Caddyfile`, `.env.production`, and the Google Cloud Console
+> (see "Google OAuth" in the README).
 
 ---
 
@@ -118,30 +120,31 @@ docker --version && docker compose version
 
 ---
 
-## 4. Domain DNS configuration
+## 4. Domain DNS configuration (Cloudflare)
 
-You already own the `.com`. Point it at the Hetzner server. In your DNS provider (Cloudflare,
-Namecheap, OVH, etc.):
+You manage `martinsnuno.com` in Cloudflare. Add **two records** for the subdomain:
 
-| Type  | Host  | Value                       | TTL |
-| ----- | ----- | --------------------------- | --- |
-| A     | `@`   | `<your IPv4>`               | 5m  |
-| AAAA  | `@`   | `<your IPv6>`               | 5m  |
-| CNAME | `www` | `yourdomain.com.`           | 5m  |
+| Type  | Name        | Content        | Proxy status      | TTL  |
+| ----- | ----------- | -------------- | ----------------- | ---- |
+| A     | `stickers`  | `<your IPv4>`  | **DNS only** 🟠→⚫ | Auto |
+| AAAA  | `stickers`  | `<your IPv6>`  | **DNS only** 🟠→⚫ | Auto |
 
-> If you're on Cloudflare, **set proxy to "DNS only" (grey cloud)** initially so Caddy can
-> obtain its Let's Encrypt cert. You can re-enable proxying afterwards if you want.
+> ⚠️ **Important on first deploy: set proxy status to "DNS only" (grey cloud).** Caddy uses
+> the HTTP-01 ACME challenge to obtain the Let's Encrypt cert, and Cloudflare's proxy (orange
+> cloud) intercepts that. After Caddy has issued the cert (you can verify with
+> `curl -I https://stickers.martinsnuno.com`), you may turn the proxy on if you want
+> Cloudflare's CDN/firewall in front. Caddy renews fine through the proxy too — only the
+> initial issuance is sensitive.
 
-Wait a few minutes for propagation, then verify:
+Wait a couple of minutes for propagation, then verify:
 
 ```bash
-dig +short yourdomain.com
-dig +short AAAA yourdomain.com
-dig +short www.yourdomain.com
+dig +short stickers.martinsnuno.com
+dig +short AAAA stickers.martinsnuno.com
 ```
 
-Each should return the matching server IP. If not, wait longer (TTLs from your previous DNS
-records may still be cached).
+Each should return your Hetzner server's IP. If not, wait longer or check the record's
+proxy status (must be grey cloud during first deploy).
 
 ---
 
@@ -153,10 +156,6 @@ cd ~
 git clone https://github.com/<your-username>/cromos-26.git
 cd cromos-26
 
-# Replace yourdomain.com in the Caddyfile
-sed -i 's/yourdomain\.com/yourdomain.com/g; s/admin@yourdomain\.com/admin@yourdomain.com/g' Caddyfile
-# (or just open Caddyfile in your editor and replace by hand)
-
 # Production env file
 cp .env.example .env.production
 ```
@@ -165,8 +164,10 @@ Edit `.env.production` with real values:
 
 ```env
 NODE_ENV=production
-APP_URL=https://yourdomain.com
-COOKIE_DOMAIN=yourdomain.com
+APP_URL=https://stickers.martinsnuno.com
+# Scope cookies to the exact subdomain. Don't use martinsnuno.com unless you're sure
+# you want auth shared across every subdomain on the parent domain.
+COOKIE_DOMAIN=stickers.martinsnuno.com
 
 # generate with: openssl rand -base64 48
 JWT_SECRET=<paste-the-output-here>
@@ -179,6 +180,12 @@ POSTGRES_DB=cromos
 DATABASE_URL=postgresql://cromos:<same-password>@db:5432/cromos?schema=public
 
 API_PORT=3000
+
+# Google OAuth — same Client ID / Secret you use in dev.
+GOOGLE_CLIENT_ID=<copy from your dev .env>
+GOOGLE_CLIENT_SECRET=<copy from your dev .env>
+# Same-origin in prod (Caddy fronts both web and api):
+API_PUBLIC_URL=https://stickers.martinsnuno.com
 ```
 
 Lock down the file so it isn't world-readable:
@@ -206,7 +213,7 @@ docker compose -f docker-compose.prod.yml --env-file .env.production exec api np
 docker compose -f docker-compose.prod.yml ps
 ```
 
-Open <https://yourdomain.com> in your browser. Caddy will request a Let's Encrypt cert on the
+Open <https://stickers.martinsnuno.com> in your browser. Caddy will request a Let's Encrypt cert on the
 first request and serve the app over HTTPS. (Behind the scenes Caddy proxies `/api/*` to the
 API container; everything else is the React SPA served from the `web-static` volume.)
 
@@ -306,9 +313,9 @@ docker compose -f docker-compose.prod.yml logs -f caddy    # cert renewals, acce
 Either:
 
 - **Self-hosted**: add a sibling `uptime-kuma:1` service to `docker-compose.prod.yml` and route
-  it via Caddy at `status.yourdomain.com`. Watches `https://yourdomain.com/api/health`.
+  it via Caddy at `status.martinsnuno.com`. Watches `https://stickers.martinsnuno.com/api/health`.
 - **External**: free [UptimeRobot](https://uptimerobot.com/) tier — 5-minute interval ping of
-  `https://yourdomain.com/api/health`.
+  `https://stickers.martinsnuno.com/api/health`.
 
 ### Caddy access logs (optional)
 
@@ -359,5 +366,5 @@ df -h
 docker system df
 ```
 
-That's it. You should now have Cromos 26 running at `https://yourdomain.com` with HTTPS, daily
+That's it. You should now have Cromos 26 running at `https://stickers.martinsnuno.com` with HTTPS, daily
 backups, and pushes to `main` auto-deploying.

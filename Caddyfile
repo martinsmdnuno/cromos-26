@@ -1,14 +1,14 @@
 # Cromos 26 — Caddy v2 config.
 #
-# Replace `yourdomain.com` everywhere below with your actual domain (and `www.yourdomain.com`
-# if you use it). Caddy automatically obtains and renews Let's Encrypt certs — no extra setup.
+# Domain: stickers.martinsnuno.com (subdomain of martinsnuno.com).
+# Caddy automatically obtains and renews Let's Encrypt certs — no extra setup.
 
 {
-	# Email used by Let's Encrypt for cert expiry notices. Replace with yours.
-	email admin@yourdomain.com
+	# Email used by Let's Encrypt for cert expiry notices.
+	email admin@martinsnuno.com
 }
 
-yourdomain.com, www.yourdomain.com {
+stickers.martinsnuno.com {
 	encode gzip zstd
 
 	# Security headers — applied to every response.
