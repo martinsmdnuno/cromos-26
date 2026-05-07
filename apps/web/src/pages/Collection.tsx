@@ -217,6 +217,9 @@ function CategorySection({
     <section>
       <div className="flex items-center gap-2.5 px-1 pb-2">
         <div className="w-1.5 h-6 rounded-sm" style={{ background: color }} />
+        <span className="text-xl leading-none" aria-hidden="true">
+          {cat.emoji}
+        </span>
         <h3 className="font-display text-lg tracking-wide uppercase">{cat.name}</h3>
         <span className="ml-auto label-mono opacity-60">
           {ownedCount}/{total}

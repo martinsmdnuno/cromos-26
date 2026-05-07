@@ -44,6 +44,7 @@ export async function statsRoutes(app: FastifyInstance) {
         id: c.id,
         name: c.name,
         colorKey: c.colorKey,
+        emoji: c.emoji,
         size: categorySize(c),
         owned: ownedByCategory[c.id] ?? 0,
       })),

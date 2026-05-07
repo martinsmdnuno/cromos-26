@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
-import { CATEGORIES, categoryForSticker } from '@cromos/shared';
+import { categoryForSticker } from '@cromos/shared';
 import { useAuth } from '../hooks/useAuth';
 
 interface GroupListItem {
@@ -135,13 +135,12 @@ function ResultPanel({
   color: string;
 }) {
   const groups = useMemo(() => {
-    const out = new Map<string, { name: string; color: string; nums: number[] }>();
+    const out = new Map<string, { name: string; emoji: string; nums: number[] }>();
     for (const n of numbers) {
       const cat = categoryForSticker(n);
       let g = out.get(cat.id);
       if (!g) {
-        const swatch = CATEGORIES.find((c) => c.id === cat.id)?.colorKey;
-        g = { name: cat.name, color: swatch ?? 'red', nums: [] };
+        g = { name: cat.name, emoji: cat.emoji, nums: [] };
         out.set(cat.id, g);
       }
       g.nums.push(n);
@@ -164,7 +163,10 @@ function ResultPanel({
       <div className="space-y-2">
         {groups.map((g) => (
           <div key={g.name}>
-            <div className="label-mono opacity-70 mb-1">{g.name}</div>
+            <div className="label-mono opacity-70 mb-1 flex items-center gap-1">
+              <span aria-hidden="true">{g.emoji}</span>
+              <span>{g.name}</span>
+            </div>
             <div className="flex flex-wrap gap-1">
               {g.nums.map((n) => (
                 <span

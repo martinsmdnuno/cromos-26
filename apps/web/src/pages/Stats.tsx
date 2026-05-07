@@ -12,7 +12,14 @@ interface StatsResponse {
   duplicates: number;
   heldTotal: number;
   completionPct: number;
-  categories: { id: string; name: string; colorKey: PaletteKey; size: number; owned: number }[];
+  categories: {
+    id: string;
+    name: string;
+    colorKey: PaletteKey;
+    emoji: string;
+    size: number;
+    owned: number;
+  }[];
   missingNumbers: number[];
 }
 
@@ -93,7 +100,10 @@ export function Stats() {
                 className="w-3.5 h-3.5 rounded border-[1.5px] border-panini-ink flex-shrink-0"
                 style={{ background: color }}
               />
-              <span className="font-semibold text-[13px] truncate" style={{ width: 110 }}>
+              <span className="text-base leading-none" aria-hidden="true">
+                {c.emoji}
+              </span>
+              <span className="font-semibold text-[13px] truncate" style={{ width: 96 }}>
                 {c.name}
               </span>
               <div className="flex-1 h-2 bg-panini-cream border border-panini-ink rounded overflow-hidden">

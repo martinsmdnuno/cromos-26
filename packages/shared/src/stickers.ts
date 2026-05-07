@@ -20,10 +20,11 @@ import type { CategoryDef, PaletteKey } from './types.js';
  * Team order matches Panini's official album layout (FIFA group order at print time).
  *
  * --- HOW TO UPDATE ---
- * Each `CategoryDef` has an inclusive [start, end] range and a `colorKey` from the
- * 8-color palette. The runtime sanity check at the bottom fails loudly if ranges
- * overlap or don't sum to 980. No DB migration needed — categories are computed on
- * the fly. Existing user data (sticker numbers + counts) is preserved.
+ * Each `CategoryDef` has an inclusive [start, end] range, a `colorKey` from the
+ * 8-color palette, and an `emoji` (country flag for teams, themed emoji otherwise).
+ * The runtime sanity check at the bottom fails loudly if ranges overlap or don't sum
+ * to 980. No DB migration needed — categories are computed on the fly. Existing user
+ * data (sticker numbers + counts) is preserved.
  */
 
 export const PALETTE: Record<PaletteKey, string> = {
@@ -51,75 +52,76 @@ const PALETTE_KEYS: PaletteKey[] = [
 ];
 
 /**
- * 48 teams in the order Panini ships them in the official album.
+ * 48 teams in Panini's official album order, paired with their flag emoji.
+ * Positions 1–45 confirmed; positions 46–48 placeholders pending physical album.
  *
- * Positions 1–45 confirmed via the official checklist.
- * Positions 46–48 are PLACEHOLDERS — the official album lists them but the precise
- * order at the end was not in our source. Edit these names when you have the album
- * physically in hand. The structure (20 stickers each) is correct regardless.
+ * Scotland and England use the regional UN flag glyphs (🏴󠁧󠁢󠁳󠁣󠁴󠁿 / 🏴󠁧󠁢󠁥󠁮󠁧󠁿) — not all
+ * platforms render those, so they may show as ⚫ on Windows. That's a system-level
+ * font fallback we can't fix here without shipping a flag image set.
  */
-const TEAMS_48 = [
-  'Mexico',
-  'South Africa',
-  'South Korea',
-  'Czechia',
-  'Canada',
-  'Bosnia and Herzegovina',
-  'Qatar',
-  'Switzerland',
-  'Brazil',
-  'Morocco',
-  'Haiti',
-  'Scotland',
-  'USA',
-  'Paraguay',
-  'Australia',
-  'Turkey',
-  'Germany',
-  'Curaçao',
-  'Ivory Coast',
-  'Ecuador',
-  'Netherlands',
-  'Japan',
-  'Sweden',
-  'Tunisia',
-  'Belgium',
-  'Egypt',
-  'Iran',
-  'New Zealand',
-  'Spain',
-  'Cape Verde',
-  'Saudi Arabia',
-  'Uruguay',
-  'France',
-  'Senegal',
-  'Iraq',
-  'Norway',
-  'Argentina',
-  'Algeria',
-  'Austria',
-  'Jordan',
-  'Portugal',
-  'Congo DR',
-  'Uzbekistan',
-  'Colombia',
-  'England',
-  // Positions 46–48 — placeholders, edit when album is physically in hand:
-  'Team 46',
-  'Team 47',
-  'Team 48',
+const TEAMS_48: { name: string; emoji: string }[] = [
+  { name: 'Mexico', emoji: '🇲🇽' },
+  { name: 'South Africa', emoji: '🇿🇦' },
+  { name: 'South Korea', emoji: '🇰🇷' },
+  { name: 'Czechia', emoji: '🇨🇿' },
+  { name: 'Canada', emoji: '🇨🇦' },
+  { name: 'Bosnia and Herzegovina', emoji: '🇧🇦' },
+  { name: 'Qatar', emoji: '🇶🇦' },
+  { name: 'Switzerland', emoji: '🇨🇭' },
+  { name: 'Brazil', emoji: '🇧🇷' },
+  { name: 'Morocco', emoji: '🇲🇦' },
+  { name: 'Haiti', emoji: '🇭🇹' },
+  { name: 'Scotland', emoji: '🏴󠁧󠁢󠁳󠁣󠁴󠁿' },
+  { name: 'USA', emoji: '🇺🇸' },
+  { name: 'Paraguay', emoji: '🇵🇾' },
+  { name: 'Australia', emoji: '🇦🇺' },
+  { name: 'Turkey', emoji: '🇹🇷' },
+  { name: 'Germany', emoji: '🇩🇪' },
+  { name: 'Curaçao', emoji: '🇨🇼' },
+  { name: 'Ivory Coast', emoji: '🇨🇮' },
+  { name: 'Ecuador', emoji: '🇪🇨' },
+  { name: 'Netherlands', emoji: '🇳🇱' },
+  { name: 'Japan', emoji: '🇯🇵' },
+  { name: 'Sweden', emoji: '🇸🇪' },
+  { name: 'Tunisia', emoji: '🇹🇳' },
+  { name: 'Belgium', emoji: '🇧🇪' },
+  { name: 'Egypt', emoji: '🇪🇬' },
+  { name: 'Iran', emoji: '🇮🇷' },
+  { name: 'New Zealand', emoji: '🇳🇿' },
+  { name: 'Spain', emoji: '🇪🇸' },
+  { name: 'Cape Verde', emoji: '🇨🇻' },
+  { name: 'Saudi Arabia', emoji: '🇸🇦' },
+  { name: 'Uruguay', emoji: '🇺🇾' },
+  { name: 'France', emoji: '🇫🇷' },
+  { name: 'Senegal', emoji: '🇸🇳' },
+  { name: 'Iraq', emoji: '🇮🇶' },
+  { name: 'Norway', emoji: '🇳🇴' },
+  { name: 'Argentina', emoji: '🇦🇷' },
+  { name: 'Algeria', emoji: '🇩🇿' },
+  { name: 'Austria', emoji: '🇦🇹' },
+  { name: 'Jordan', emoji: '🇯🇴' },
+  { name: 'Portugal', emoji: '🇵🇹' },
+  { name: 'Congo DR', emoji: '🇨🇩' },
+  { name: 'Uzbekistan', emoji: '🇺🇿' },
+  { name: 'Colombia', emoji: '🇨🇴' },
+  { name: 'England', emoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+  // Positions 46–48 — placeholders, edit when album is physically in hand.
+  // Use ⚽ as fallback emoji until the team is identified.
+  { name: 'Team 46', emoji: '⚽' },
+  { name: 'Team 47', emoji: '⚽' },
+  { name: 'Team 48', emoji: '⚽' },
 ];
 
 function buildCategories(): CategoryDef[] {
   const cats: CategoryDef[] = [];
 
-  // #1 — Panini logo foil (single sticker, treated as part of the opening).
-  // #2–9 — Tournament intro (emblems, mascots, slogan, ball, host countries).
+  // #1–9 — Tournament intro (Panini logo + emblems + mascots + slogan + ball + hosts).
   cats.push({
     id: 'opening',
     name: 'Opening / Logos',
     colorKey: 'red',
     range: [1, 9],
+    emoji: '🎉',
   });
 
   // #10–20 — FIFA Museum (11 historical World Cup champions).
@@ -128,6 +130,7 @@ function buildCategories(): CategoryDef[] {
     name: 'FIFA Museum',
     colorKey: 'navy',
     range: [10, 20],
+    emoji: '🏆',
   });
 
   // #21–980 — 48 teams × 20 stickers each = 960 stickers.
@@ -136,11 +139,13 @@ function buildCategories(): CategoryDef[] {
   for (let i = 0; i < 48; i++) {
     const start = cursor;
     const end = cursor + stickersPerTeam - 1;
+    const team = TEAMS_48[i]!;
     cats.push({
       id: `team-${i + 1}`,
-      name: TEAMS_48[i] ?? `Team ${i + 1}`,
+      name: team.name,
       colorKey: PALETTE_KEYS[i % PALETTE_KEYS.length]!,
       range: [start, end],
+      emoji: team.emoji,
     });
     cursor = end + 1;
   }

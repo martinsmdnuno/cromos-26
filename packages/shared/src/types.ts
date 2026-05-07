@@ -75,6 +75,12 @@ export interface CategoryDef {
   colorKey: PaletteKey;
   /** inclusive sticker number range */
   range: [number, number];
+  /**
+   * Display emoji for this category. For team categories, a country flag (🇵🇹).
+   * For non-team sections, a relevant emoji (🏆, 🎉, 📜).
+   * Falls back to ⚽ if missing — every CategoryDef in the canonical config has one.
+   */
+  emoji: string;
 }
 
 export type PaletteKey =
