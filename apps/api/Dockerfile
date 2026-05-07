@@ -2,6 +2,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# OpenSSL is required by Prisma's schema engine on Alpine.
+RUN apk add --no-cache openssl libc6-compat
+
 RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 
 # Install all workspace deps using only the manifests (cached layer).
@@ -17,14 +20,18 @@ COPY apps/api apps/api
 
 # Build shared FIRST so the API's tsc resolves it via dist/*.d.ts (not source).
 RUN pnpm --filter @cromos/shared build
-# Generate Prisma client + build TS for the API.
+# Generate Prisma client (downloads the linux-musl engine because of binaryTargets).
 RUN pnpm --filter @cromos/api prisma:generate
+# Build the API TS.
 RUN pnpm --filter @cromos/api build
 
 # --- runtime ---
 FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+
+# Same OpenSSL requirement as the builder, plus libc6-compat for the prisma engine.
+RUN apk add --no-cache openssl libc6-compat
 
 RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 
