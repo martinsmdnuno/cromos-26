@@ -1,0 +1,55 @@
+# Local development stack — `docker compose up` and you're running.
+# Use docker-compose.prod.yml for production.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cromos}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cromos}
+      POSTGRES_DB: ${POSTGRES_DB:-cromos}
+    ports:
+      - '127.0.0.1:5432:5432' # only loopback in dev so you can connect with a GUI
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-cromos}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cromos}:${POSTGRES_PASSWORD:-cromos}@db:5432/${POSTGRES_DB:-cromos}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-please-32-chars-min}
+      APP_URL: ${APP_URL:-http://localhost:5173}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-localhost}
+      API_PORT: 3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # In dev, web runs via `pnpm dev` outside of compose for hot reload speed.
+  # If you want web inside compose too, uncomment:
+  #
+  # web:
+  #   image: node:20-alpine
+  #   working_dir: /app/apps/web
+  #   command: sh -c "corepack enable && corepack prepare pnpm@9.12.0 --activate && pnpm install && pnpm dev --host"
+  #   environment:
+  #     VITE_API_BASE_URL: http://api:3000
+  #   ports:
+  #     - '5173:5173'
+  #   volumes:
+  #     - ./:/app
+
+volumes:
+  postgres-data:
