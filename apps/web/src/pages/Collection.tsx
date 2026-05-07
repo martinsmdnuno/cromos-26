@@ -223,9 +223,11 @@ function CategorySection({
         </span>
       </div>
       <div
-        className="grid gap-1.5"
+        className="grid gap-1.5 sm:gap-2"
         style={{
-          gridTemplateColumns: 'repeat(auto-fill, minmax(48px, 1fr))',
+          // Mobile: ~5–6 columns at 56px min (44px tile + breathing room ≥ 44px tap target).
+          // Desktop expands automatically up to 8–10 columns at 720–800px container width.
+          gridTemplateColumns: 'repeat(auto-fill, minmax(56px, 1fr))',
         }}
       >
         {stickers.map((n) => (
