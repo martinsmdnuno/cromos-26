@@ -70,12 +70,22 @@ export function useSpeechRecognition({ lang = 'en-US' }: UseSRArgs = {}): UseSRR
   const [interim, setInterim] = useState('');
   const [error, setError] = useState<string | null>(null);
   const recRef = useRef<SpeechRecognitionInstance | null>(null);
+  // Indices of result entries we've already appended to the transcript. Safari
+  // iOS, with continuous + interimResults, occasionally fires onresult twice
+  // with the same finalised result — once when the result transitions from
+  // interim to final, once a moment later. Without this guard each utterance
+  // gets typed twice into the textarea ("Mete duas vezes" — exactly the bug
+  // a user reported). Cleared on every fresh `start()` so a new session's
+  // result indices (which may collide with the previous session's) aren't
+  // mistakenly skipped.
+  const seenFinalRef = useRef<Set<number>>(new Set());
 
   // Re-create the recogniser whenever the lang changes — Safari does not let
   // you mutate `.lang` on a running instance reliably.
   useEffect(() => {
     const Ctor = getSRCtor();
     if (!Ctor) return;
+    seenFinalRef.current = new Set();
     const r = new Ctor();
     r.continuous = true;
     r.interimResults = true;
@@ -86,8 +96,14 @@ export function useSpeechRecognition({ lang = 'en-US' }: UseSRArgs = {}): UseSRR
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const result = e.results[i]!;
         const text = result[0]!.transcript;
-        if (result.isFinal) finalText += text + ' ';
-        else interimText += text;
+        if (result.isFinal) {
+          if (!seenFinalRef.current.has(i)) {
+            seenFinalRef.current.add(i);
+            finalText += text + ' ';
+          }
+        } else {
+          interimText += text;
+        }
       }
       if (finalText) setTranscript((prev) => prev + finalText);
       setInterim(interimText);
@@ -114,6 +130,7 @@ export function useSpeechRecognition({ lang = 'en-US' }: UseSRArgs = {}): UseSRR
   const start = useCallback(() => {
     setError(null);
     setInterim('');
+    seenFinalRef.current.clear();
     const r = recRef.current;
     if (!r) {
       setError('not_supported');
