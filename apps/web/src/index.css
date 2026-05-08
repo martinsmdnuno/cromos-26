@@ -62,7 +62,10 @@
   scrollbar-width: none;
 }
 
-/* Sticker tile — base layout, color comes via inline style for team. */
+/* Sticker tile — base layout, color comes via inline style for team. The
+   tile renders the album label on two stacked lines: a small monospaced
+   prefix (POR / FWC) on top + a big Anton number underneath. The number is
+   the bit a user is actually trying to read, so it gets the height. */
 .sticker-tile {
   aspect-ratio: 2 / 3;
   /* manipulation = panning + pinch zoom only, no double-tap-zoom delay. Removes the
@@ -70,10 +73,31 @@
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
-  @apply rounded-lg border-2 border-panini-ink relative flex items-center justify-center font-mono text-[10px] font-bold transition-transform;
+  @apply rounded-lg border-2 border-panini-ink relative flex flex-col items-center justify-center transition-transform;
 }
 .sticker-tile:active {
   transform: scale(0.96);
+}
+.sticker-tile .sticker-prefix {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  opacity: 0.65;
+  margin-bottom: 2px;
+}
+.sticker-tile .sticker-suffix {
+  font-family: 'Anton', sans-serif;
+  font-size: 22px;
+  font-weight: 400; /* Anton is already heavy */
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+/* Sticker #1 is "00", a single big number with no prefix above. Bump it up
+   slightly so it visually fills the tile like the FWC/team labels do. */
+.sticker-tile:not(:has(.sticker-prefix)) .sticker-suffix {
+  font-size: 26px;
 }
 .sticker-tile.missing {
   background: #ffffff;

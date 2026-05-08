@@ -346,12 +346,10 @@ function CategorySection({
         </span>
       </div>
       <div
-        className="grid gap-1.5 sm:gap-2"
-        style={{
-          // Mobile: ~5–6 columns at 56px min (44px tile + breathing room ≥ 44px tap target).
-          // Desktop expands automatically up to 8–10 columns at 720–800px container width.
-          gridTemplateColumns: 'repeat(auto-fill, minmax(56px, 1fr))',
-        }}
+        className="grid gap-1.5 sm:gap-2 grid-cols-5 sm:grid-cols-7 md:grid-cols-10"
+        // Fixed 5 columns on mobile — auto-fill landed on 6 on iPhone Pro/Max
+        // sizes, which both shrunk the tiles and broke the brain's natural
+        // 5-at-a-time chunking that the printed album already uses.
       >
         {stickers.map((n) => (
           <StickerTile

@@ -3,6 +3,18 @@ import clsx from 'clsx';
 import { categoryForSticker, PALETTE, stickerLabel } from '@cromos/shared';
 import { useT } from '../i18n/LangContext';
 
+/**
+ * Split a sticker label into the small "team / section" prefix and the big
+ * positional number, for the stacked-display tile layout. Sticker #1 is the
+ * Panini "00" foil and is shown as a single big "00" with no prefix.
+ */
+function splitTileLabel(num: number): { prefix: string | null; suffix: string } {
+  if (num === 1) return { prefix: null, suffix: '00' };
+  const cat = categoryForSticker(num);
+  const label = stickerLabel(num);
+  return { prefix: cat.prefix, suffix: label.slice(cat.prefix.length) };
+}
+
 interface Props {
   number: number;
   count: number; // 0 missing, 1 owned, 2+ duplicate
@@ -88,9 +100,9 @@ export const StickerTile = memo(function StickerTile({
     : isDup
       ? t('sticker.aria.owned_n', { n: count })
       : t('sticker.aria.owned');
-  const display = stickerLabel(number);
+  const { prefix, suffix } = splitTileLabel(number);
   const ariaLabel = t('sticker.aria.label', {
-    n: display,
+    n: stickerLabel(number),
     category: t(`category.${cat.id}`),
     status,
   });
@@ -110,7 +122,8 @@ export const StickerTile = memo(function StickerTile({
       aria-label={ariaLabel}
       aria-pressed={isOwned}
     >
-      {display}
+      {prefix && <span className="sticker-prefix">{prefix}</span>}
+      <span className="sticker-suffix">{suffix}</span>
     </button>
   );
 });
