@@ -11,6 +11,7 @@ import { api } from '../api';
 import { StickerTile } from '../components/StickerTile';
 import { CountEditor } from '../components/CountEditor';
 import { PackModal } from '../components/PackModal';
+import { track } from '../hooks/useTrack';
 import { useT } from '../i18n/LangContext';
 
 type Filter = 'all' | 'owned' | 'missing' | 'duplicates' | 'almost';
@@ -178,7 +179,10 @@ export function Collection() {
           (adding stickers) is the first thing the eye lands on. */}
       <div className="mt-3">
         <button
-          onClick={() => setPackOpen(true)}
+          onClick={() => {
+            track('pack.opened');
+            setPackOpen(true);
+          }}
           className="pill !bg-panini-yellow w-full !py-2 font-bold flex items-center justify-center gap-1.5"
         >
           <span aria-hidden="true">📦</span>

@@ -1,10 +1,12 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api } from '../api';
+import { track } from './useTrack';
 
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
+  isAdmin?: boolean;
 }
 
 interface AuthContextValue {
@@ -41,10 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           password,
         });
         setUser(r.user);
+        track('auth.signup', { method: 'email' });
       },
       async login(email, password) {
         const r = await api.post<{ user: AuthUser }>('/api/auth/login', { email, password });
         setUser(r.user);
+        track('auth.login', { method: 'email' });
       },
       async logout() {
         await api.post('/api/auth/logout');

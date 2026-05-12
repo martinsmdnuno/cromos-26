@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
 import { useT } from '../i18n/LangContext';
+import { track } from '../hooks/useTrack';
 
 interface GroupListItem {
   id: string;
@@ -27,11 +28,17 @@ export function Groups() {
 
   const create = useMutation({
     mutationFn: (name: string) => api.post('/api/groups', { name }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['groups'] }),
+    onSuccess: () => {
+      track('group.created');
+      void qc.invalidateQueries({ queryKey: ['groups'] });
+    },
   });
   const join = useMutation({
     mutationFn: (code: string) => api.post('/api/groups/join', { code }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['groups'] }),
+    onSuccess: () => {
+      track('group.joined');
+      void qc.invalidateQueries({ queryKey: ['groups'] });
+    },
   });
 
   return (

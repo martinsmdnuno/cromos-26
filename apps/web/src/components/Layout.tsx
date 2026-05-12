@@ -5,6 +5,7 @@ import { AvatarMenu } from './AvatarMenu';
 import { LangToggle } from './LangToggle';
 import { ScrollDebugOverlay } from './ScrollDebugOverlay';
 import { useT } from '../i18n/LangContext';
+import { useTrackPageView } from '../hooks/useTrack';
 
 /**
  * Responsive shell:
@@ -14,6 +15,7 @@ import { useT } from '../i18n/LangContext';
  */
 export function Layout() {
   const { t } = useT();
+  useTrackPageView();
   return (
     <div className="min-h-dvh bg-panini-cream flex flex-col">
       <header className="px-5 pt-3 pb-3 max-w-[800px] mx-auto w-full">

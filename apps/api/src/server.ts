@@ -12,6 +12,8 @@ import { tradeRoutes } from './routes/trades.js';
 import { statsRoutes } from './routes/stats.js';
 import { metaRoutes } from './routes/meta.js';
 import { feedbackRoutes } from './routes/feedback.js';
+import { eventRoutes } from './routes/events.js';
+import { adminRoutes } from './routes/admin.js';
 
 export function buildServer() {
   const app = Fastify({
@@ -42,6 +44,8 @@ export function buildServer() {
   app.register(tradeRoutes, { prefix: '/api/trades' });
   app.register(statsRoutes, { prefix: '/api/stats' });
   app.register(feedbackRoutes, { prefix: '/api/feedback' });
+  app.register(eventRoutes, { prefix: '/api/events' });
+  app.register(adminRoutes, { prefix: '/api/admin' });
 
   return app;
 }

@@ -10,6 +10,7 @@ import { Trades } from './pages/Trades';
 import { Stats } from './pages/Stats';
 import { Legal } from './pages/Legal';
 import { Profile } from './pages/Profile';
+import { Admin } from './pages/Admin';
 
 export function App() {
   return (
@@ -57,6 +58,7 @@ function AppRoutes() {
         <Route path="/trades" element={<Trades />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/admin" element={<Admin />} />
         <Route path="/legal/terms" element={<Legal kind="terms" />} />
         <Route path="/legal/privacy" element={<Legal kind="privacy" />} />
         <Route path="*" element={<Navigate to="/collection" replace />} />

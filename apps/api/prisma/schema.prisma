@@ -23,12 +23,34 @@ model User {
   googleId     String?  @unique
   // URL to the user's Google avatar (optional, populated on first OAuth login).
   avatarUrl    String?
+  // Admin flag — gates the /admin area + /api/admin/* endpoints. Bootstrap
+  // via scripts/make-admin.sh on the server. Default false for every signup.
+  isAdmin      Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   stickers      UserSticker[]
   memberships   GroupMembership[]
   createdGroups Group[]           @relation("GroupCreator")
+}
+
+/// Lightweight in-house analytics. Every page view + key action lands here.
+/// Page views use name = "page.view" with `path` populated.
+model Event {
+  id        String   @id @default(cuid())
+  /// Nullable for anonymous events (none today, but reserved for future).
+  userId    String?
+  /// Dot-namespaced event id, e.g. "page.view", "pack.submitted", "group.created".
+  name      String
+  /// Optional route or screen identifier (e.g. "/collection").
+  path      String?
+  /// Free-form JSON payload for event-specific dimensions. Keep small.
+  props     Json?
+  createdAt DateTime @default(now())
+
+  @@index([name, createdAt])
+  @@index([userId, createdAt])
+  @@index([createdAt])
 }
 
 model UserSticker {
