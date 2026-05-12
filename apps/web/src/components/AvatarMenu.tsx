@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useT } from '../i18n/LangContext';
 import { Avatar } from './Avatar';
+import { FeedbackModal } from './FeedbackModal';
 
 /**
  * Header avatar that opens a small dropdown with profile info, legal links, and a
@@ -12,6 +13,7 @@ export function AvatarMenu() {
   const { user, logout } = useAuth();
   const { t } = useT();
   const [open, setOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -55,6 +57,18 @@ export function AvatarMenu() {
             <div className="font-mono text-[11px] opacity-60 truncate">{user.email}</div>
           </div>
           <nav className="mt-1 flex flex-col">
+            <button
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                setFeedbackOpen(true);
+              }}
+              className="px-3 py-2 rounded-lg hover:bg-panini-cream font-semibold text-sm flex items-center gap-2 text-left"
+            >
+              <span aria-hidden="true">📣</span>
+              <span>{t('menu.feedback')}</span>
+            </button>
+            <div className="h-px bg-panini-ink/10 my-1" />
             <Link
               to="/profile"
               role="menuitem"
@@ -98,6 +112,8 @@ export function AvatarMenu() {
           </nav>
         </div>
       )}
+
+      {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
     </div>
   );
 }

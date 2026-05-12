@@ -45,6 +45,7 @@ export const en: Dict = {
   'auth.sign_out': 'Sign out',
   'menu.open_aria': 'Open profile menu',
   'menu.profile': 'Profile',
+  'menu.feedback': 'Send feedback',
   'menu.terms': 'Terms of use',
   'menu.privacy': 'Privacy policy',
 
@@ -58,6 +59,17 @@ export const en: Dict = {
   'profile.saved': 'Saved.',
   'profile.error.name_required': 'Please enter a name.',
   'profile.error.generic': 'Could not save — please try again.',
+
+  // Feedback
+  'feedback.title': 'SEND FEEDBACK',
+  'feedback.hint': 'Found a bug or have an idea? Tell me about it.',
+  'feedback.placeholder': 'What\'s on your mind?',
+  'feedback.contact_ok': 'It\'s OK to reply to me using my account email.',
+  'feedback.send': 'SEND',
+  'feedback.sending': 'SENDING…',
+  'feedback.close': 'CLOSE',
+  'feedback.thanks': 'Thanks — message received.',
+  'feedback.error.generic': 'Could not send — please try again.',
   'legal.last_updated': 'Last updated {date}',
   'legal.disclaimer':
     'This page is plain-language guidance, not legal advice. For legal questions, consult a lawyer.',
@@ -279,6 +291,7 @@ export const pt: Dict = {
   'auth.sign_out': 'Terminar sessão',
   'menu.open_aria': 'Abrir menu do perfil',
   'menu.profile': 'Perfil',
+  'menu.feedback': 'Enviar feedback',
   'menu.terms': 'Termos de utilização',
   'menu.privacy': 'Política de privacidade',
 
@@ -292,6 +305,17 @@ export const pt: Dict = {
   'profile.saved': 'Guardado.',
   'profile.error.name_required': 'Indica um nome.',
   'profile.error.generic': 'Não foi possível guardar — tenta outra vez.',
+
+  // Feedback
+  'feedback.title': 'ENVIAR FEEDBACK',
+  'feedback.hint': 'Encontraste um bug ou tens uma ideia? Conta-me.',
+  'feedback.placeholder': 'O que tens em mente?',
+  'feedback.contact_ok': 'Podes responder-me usando o email da minha conta.',
+  'feedback.send': 'ENVIAR',
+  'feedback.sending': 'A ENVIAR…',
+  'feedback.close': 'FECHAR',
+  'feedback.thanks': 'Obrigado — mensagem recebida.',
+  'feedback.error.generic': 'Não foi possível enviar — tenta outra vez.',
   'legal.last_updated': 'Actualizado a {date}',
   'legal.disclaimer':
     'Esta página é informação em linguagem simples, não aconselhamento jurídico. Para questões legais consulta um advogado.',
