@@ -57,6 +57,29 @@ export function AvatarMenu() {
             <div className="font-mono text-[11px] opacity-60 truncate">{user.email}</div>
           </div>
           <nav className="mt-1 flex flex-col">
+            {user.isAdmin && (
+              <>
+                <Link
+                  to="/admin"
+                  role="menuitem"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-2 rounded-lg hover:bg-panini-cream font-semibold text-sm flex items-center gap-2"
+                >
+                  <span aria-hidden="true">🛠</span>
+                  <span>{t('menu.admin')}</span>
+                </Link>
+                <div className="h-px bg-panini-ink/10 my-1" />
+              </>
+            )}
+            <Link
+              to="/profile"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-panini-cream font-semibold text-sm flex items-center gap-2"
+            >
+              <span aria-hidden="true">👤</span>
+              <span>{t('menu.profile')}</span>
+            </Link>
             <button
               role="menuitem"
               onClick={() => {
@@ -68,16 +91,6 @@ export function AvatarMenu() {
               <span aria-hidden="true">📣</span>
               <span>{t('menu.feedback')}</span>
             </button>
-            <div className="h-px bg-panini-ink/10 my-1" />
-            <Link
-              to="/profile"
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              className="px-3 py-2 rounded-lg hover:bg-panini-cream font-semibold text-sm flex items-center gap-2"
-            >
-              <span aria-hidden="true">👤</span>
-              <span>{t('menu.profile')}</span>
-            </Link>
             <div className="h-px bg-panini-ink/10 my-1" />
             <Link
               to="/legal/terms"

@@ -44,7 +44,7 @@ export async function authRoutes(app: FastifyInstance) {
     });
     const token = app.jwt.sign({ sub: user.id });
     reply.setCookie(COOKIE_NAME, token, cookieOptions());
-    return { user: { id: user.id, email: user.email, name: user.name } };
+    return { user: { id: user.id, email: user.email, name: user.name, isAdmin: user.isAdmin } };
   });
 
   app.post('/login', async (req, reply) => {
@@ -59,7 +59,7 @@ export async function authRoutes(app: FastifyInstance) {
     if (!ok) return reply.code(401).send({ error: 'invalid_credentials' });
     const token = app.jwt.sign({ sub: user.id });
     reply.setCookie(COOKIE_NAME, token, cookieOptions());
-    return { user: { id: user.id, email: user.email, name: user.name } };
+    return { user: { id: user.id, email: user.email, name: user.name, isAdmin: user.isAdmin } };
   });
 
   app.post('/logout', async (_req, reply) => {
@@ -70,7 +70,7 @@ export async function authRoutes(app: FastifyInstance) {
   app.get('/me', { preHandler: requireAuth }, async (req, reply) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.sub } });
     if (!user) return reply.code(401).send({ error: 'unauthorized' });
-    return { user: { id: user.id, email: user.email, name: user.name } };
+    return { user: { id: user.id, email: user.email, name: user.name, isAdmin: user.isAdmin } };
   });
 
   app.patch('/me', { preHandler: requireAuth }, async (req, reply) => {
