@@ -13,6 +13,10 @@ const signupSchema = credentialsSchema.extend({
   name: z.string().trim().min(1).max(60),
 });
 
+const updateMeSchema = z.object({
+  name: z.string().trim().min(1).max(60),
+});
+
 function cookieOptions() {
   return {
     httpOnly: true,
@@ -66,6 +70,16 @@ export async function authRoutes(app: FastifyInstance) {
   app.get('/me', { preHandler: requireAuth }, async (req, reply) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.sub } });
     if (!user) return reply.code(401).send({ error: 'unauthorized' });
+    return { user: { id: user.id, email: user.email, name: user.name } };
+  });
+
+  app.patch('/me', { preHandler: requireAuth }, async (req, reply) => {
+    const parsed = updateMeSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: 'invalid_input' });
+    const user = await prisma.user.update({
+      where: { id: req.user.sub },
+      data: { name: parsed.data.name },
+    });
     return { user: { id: user.id, email: user.email, name: user.name } };
   });
 }

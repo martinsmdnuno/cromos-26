@@ -13,6 +13,7 @@ interface AuthContextValue {
   signup: (name: string, email: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateProfile: (data: { name: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -48,6 +49,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async logout() {
         await api.post('/api/auth/logout');
         setUser(null);
+      },
+      async updateProfile(data) {
+        const r = await api.patch<{ user: AuthUser }>('/api/auth/me', data);
+        setUser(r.user);
       },
     }),
     [user, loading],

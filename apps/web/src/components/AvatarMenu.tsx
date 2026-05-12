@@ -56,6 +56,16 @@ export function AvatarMenu() {
           </div>
           <nav className="mt-1 flex flex-col">
             <Link
+              to="/profile"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-panini-cream font-semibold text-sm flex items-center gap-2"
+            >
+              <span aria-hidden="true">👤</span>
+              <span>{t('menu.profile')}</span>
+            </Link>
+            <div className="h-px bg-panini-ink/10 my-1" />
+            <Link
               to="/legal/terms"
               role="menuitem"
               onClick={() => setOpen(false)}
