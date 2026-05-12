@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
 import { useT } from '../i18n/LangContext';
@@ -17,6 +17,13 @@ interface GroupListItem {
 export function Groups() {
   const qc = useQueryClient();
   const { t } = useT();
+  const navigate = useNavigate();
+  // `/join/:code` mounts this page with a code param — auto-open the join
+  // modal pre-filled so the deep link from a shared WhatsApp invite is
+  // a single tap to confirm.
+  const { code: codeFromUrl } = useParams<{ code?: string }>();
+  const initialJoinCode = codeFromUrl?.trim().toUpperCase().slice(0, 6);
+
   const groupsQ = useQuery({
     queryKey: ['groups'],
     queryFn: () => api.get<{ groups: GroupListItem[] }>('/api/groups'),
@@ -24,7 +31,11 @@ export function Groups() {
   });
 
   const [showCreate, setShowCreate] = useState(false);
-  const [showJoin, setShowJoin] = useState(false);
+  const [showJoin, setShowJoin] = useState(!!initialJoinCode);
+
+  useEffect(() => {
+    if (initialJoinCode) setShowJoin(true);
+  }, [initialJoinCode]);
 
   const create = useMutation({
     mutationFn: (name: string) => api.post('/api/groups', { name }),
@@ -118,10 +129,17 @@ export function Groups() {
           placeholder={t('modal.code_placeholder')}
           submitLabel={t('modal.join')}
           mono
-          onClose={() => setShowJoin(false)}
+          initialValue={initialJoinCode}
+          onClose={() => {
+            setShowJoin(false);
+            // If we landed here via /join/:code, clean the URL so a refresh
+            // doesn't re-open the modal after a cancel.
+            if (codeFromUrl) navigate('/groups', { replace: true });
+          }}
           onSubmit={async (val) => {
             await join.mutateAsync(val.trim().toUpperCase());
             setShowJoin(false);
+            if (codeFromUrl) navigate('/groups', { replace: true });
           }}
         />
       )}
@@ -134,6 +152,7 @@ function PromptModal({
   placeholder,
   submitLabel,
   mono,
+  initialValue,
   onClose,
   onSubmit,
 }: {
@@ -141,11 +160,12 @@ function PromptModal({
   placeholder: string;
   submitLabel: string;
   mono?: boolean;
+  initialValue?: string;
   onClose: () => void;
   onSubmit: (val: string) => Promise<void>;
 }) {
   const { t } = useT();
-  const [val, setVal] = useState('');
+  const [val, setVal] = useState(initialValue ?? '');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const submit = async (e: React.FormEvent) => {

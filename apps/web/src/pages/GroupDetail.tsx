@@ -99,13 +99,14 @@ export function GroupDetail() {
           <h1 className="font-display text-4xl leading-none tracking-wide mt-2 uppercase">
             {detail.group.name}
           </h1>
-          <div className="mt-2 flex items-center gap-3 font-mono text-xs">
+          <div className="mt-2 flex items-center gap-2 font-mono text-xs flex-wrap">
             <span>
               {detail.members.length === 1
                 ? t('groups.member_count_one')
                 : t('groups.member_count_other', { n: detail.members.length })}
             </span>
             <CodePill code={detail.group.code} />
+            <ShareButton code={detail.group.code} groupName={detail.group.name} />
           </div>
         </div>
       </div>
@@ -212,6 +213,50 @@ function CodePill({ code }: { code: string }) {
       aria-label={t('group.copy_code_aria', { code })}
     >
       {copied ? t('group.copied') : code}
+    </button>
+  );
+}
+
+/**
+ * Native share sheet for the group invite. Uses the Web Share API on mobile
+ * (iOS Safari and Android Chrome both supported) so the user can pick
+ * WhatsApp / Messages / Mail in one tap. Falls back to copying the join URL
+ * on desktop browsers that don't implement `navigator.share`.
+ *
+ * The shared URL points at `/join/:code`, which auto-opens the join modal
+ * pre-filled — so the receiver only needs one tap to confirm.
+ */
+function ShareButton({ code, groupName }: { code: string; groupName: string }) {
+  const { t } = useT();
+  const [copied, setCopied] = useState(false);
+  const onClick = async () => {
+    const url = `${window.location.origin}/join/${code}`;
+    const text = t('group.share_text', { name: groupName, code });
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: t('group.share_title'), text, url });
+        return;
+      } catch (e) {
+        // User cancelled — do nothing. Anything else falls through to copy.
+        if ((e as DOMException).name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* ignore */
+    }
+  };
+  return (
+    <button
+      onClick={onClick}
+      className="font-mono font-bold uppercase tracking-wide border-2 border-white/80 rounded-pill px-2.5 py-0.5 bg-white text-panini-ink hover:bg-panini-cream flex items-center gap-1"
+      aria-label={t('group.share_aria', { code })}
+    >
+      <span aria-hidden="true">↗</span>
+      <span>{copied ? t('group.share_copied') : t('group.share')}</span>
     </button>
   );
 }
