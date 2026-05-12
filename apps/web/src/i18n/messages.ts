@@ -44,8 +44,20 @@ export const en: Dict = {
   'auth.or': 'or',
   'auth.sign_out': 'Sign out',
   'menu.open_aria': 'Open profile menu',
+  'menu.profile': 'Profile',
   'menu.terms': 'Terms of use',
   'menu.privacy': 'Privacy policy',
+
+  // Profile page
+  'profile.title': 'PROFILE',
+  'profile.display_name': 'DISPLAY NAME',
+  'profile.email': 'EMAIL',
+  'profile.email_readonly_hint': 'Email cannot be changed.',
+  'profile.save': 'SAVE',
+  'profile.saving': 'SAVING…',
+  'profile.saved': 'Saved.',
+  'profile.error.name_required': 'Please enter a name.',
+  'profile.error.generic': 'Could not save — please try again.',
   'legal.last_updated': 'Last updated {date}',
   'legal.disclaimer':
     'This page is plain-language guidance, not legal advice. For legal questions, consult a lawyer.',
@@ -266,8 +278,20 @@ export const pt: Dict = {
   'auth.or': 'ou',
   'auth.sign_out': 'Terminar sessão',
   'menu.open_aria': 'Abrir menu do perfil',
+  'menu.profile': 'Perfil',
   'menu.terms': 'Termos de utilização',
   'menu.privacy': 'Política de privacidade',
+
+  // Profile page
+  'profile.title': 'PERFIL',
+  'profile.display_name': 'NOME',
+  'profile.email': 'EMAIL',
+  'profile.email_readonly_hint': 'O email não pode ser alterado.',
+  'profile.save': 'GUARDAR',
+  'profile.saving': 'A GUARDAR…',
+  'profile.saved': 'Guardado.',
+  'profile.error.name_required': 'Indica um nome.',
+  'profile.error.generic': 'Não foi possível guardar — tenta outra vez.',
   'legal.last_updated': 'Actualizado a {date}',
   'legal.disclaimer':
     'Esta página é informação em linguagem simples, não aconselhamento jurídico. Para questões legais consulta um advogado.',
