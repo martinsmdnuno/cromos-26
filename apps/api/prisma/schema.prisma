@@ -72,3 +72,20 @@ model GroupMembership {
   @@index([userId])
   @@index([groupId])
 }
+
+model Feedback {
+  id        String   @id @default(cuid())
+  /// Nullable so anonymous feedback (no auth) can also land here in the future.
+  userId    String?
+  message   String
+  /// Origin URL or route the user was on when they sent the feedback.
+  page      String?
+  userAgent String?
+  /// Whether the user opted in to be contacted back about this feedback.
+  contactOk Boolean  @default(false)
+  /// True if we successfully forwarded this feedback by email (Resend).
+  emailed   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

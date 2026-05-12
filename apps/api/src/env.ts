@@ -15,6 +15,15 @@ const schema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   /** Where the API itself lives — used to build the OAuth callback URL. Defaults to APP_URL when same-origin. */
   API_PUBLIC_URL: z.string().url().optional(),
+  // Resend email forwarding for /api/feedback. Both optional — if either is
+  // missing, feedback is still stored in the DB and the endpoint succeeds, we
+  // just don't ping anyone.
+  RESEND_API_KEY: z.string().optional(),
+  FEEDBACK_NOTIFY_EMAIL: z.string().email().optional(),
+  /** From-address for the feedback email. Defaults to Resend's onboarding sender,
+   *  which only allows sending to the email the Resend account was created with —
+   *  perfectly fine for this use case. Override to use a verified domain. */
+  FEEDBACK_FROM_EMAIL: z.string().default('Cromos 26 <onboarding@resend.dev>'),
 });
 
 const parsed = schema.safeParse(process.env);
