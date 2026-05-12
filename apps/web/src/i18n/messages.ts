@@ -177,6 +177,11 @@ export const en: Dict = {
   'group.gives': 'GIVES',
   'group.copied': 'COPIED!',
   'group.copy_code_aria': 'Invite code {code}, click to copy',
+  'group.share': 'SHARE',
+  'group.share_copied': 'COPIED!',
+  'group.share_aria': 'Share invite for group {code}',
+  'group.share_title': 'Cromos 26 — group invite',
+  'group.share_text': 'Join my Cromos 26 group "{name}" — code {code}',
 
   // Direct trades
   'trades.title': 'DIRECT TRADES',
@@ -424,6 +429,11 @@ export const pt: Dict = {
   'group.gives': 'DÁ',
   'group.copied': 'COPIADO!',
   'group.copy_code_aria': 'Código de convite {code}, clica para copiar',
+  'group.share': 'PARTILHAR',
+  'group.share_copied': 'COPIADO!',
+  'group.share_aria': 'Partilhar convite do grupo {code}',
+  'group.share_title': 'Cromos 26 — convite para grupo',
+  'group.share_text': 'Junta-te ao meu grupo do Cromos 26 "{name}" — código {code}',
 
   // Direct trades
   'trades.title': 'TROCAS DIRETAS',

@@ -55,6 +55,8 @@ function AppRoutes() {
         <Route path="/collection" element={<Collection />} />
         <Route path="/groups" element={<Groups />} />
         <Route path="/groups/:id" element={<GroupDetail />} />
+        {/* Deep-link from a shared WhatsApp invite — auto-opens the join modal pre-filled. */}
+        <Route path="/join/:code" element={<Groups />} />
         <Route path="/trades" element={<Trades />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="/profile" element={<Profile />} />
