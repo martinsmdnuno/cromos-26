@@ -3,6 +3,7 @@ import { Logo } from './Logo';
 import { BottomTabBar, TopTabBar } from './TabBar';
 import { AvatarMenu } from './AvatarMenu';
 import { LangToggle } from './LangToggle';
+import { ScrollDebugOverlay } from './ScrollDebugOverlay';
 import { useT } from '../i18n/LangContext';
 
 /**
@@ -14,7 +15,7 @@ import { useT } from '../i18n/LangContext';
 export function Layout() {
   const { t } = useT();
   return (
-    <div className="min-h-full bg-panini-cream flex flex-col">
+    <div className="min-h-dvh bg-panini-cream flex flex-col">
       <header className="px-5 pt-3 pb-3 max-w-[800px] mx-auto w-full">
         <div className="flex justify-between items-center gap-2">
           <Logo />
@@ -45,6 +46,9 @@ export function Layout() {
 
       {/* Bottom tab bar only on mobile */}
       <BottomTabBar />
+
+      {/* Diagnostic overlay opt-in via `?debug=scroll`. Off in normal use. */}
+      <ScrollDebugOverlay />
     </div>
   );
 }

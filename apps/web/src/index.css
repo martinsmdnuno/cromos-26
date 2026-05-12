@@ -6,7 +6,12 @@
   html,
   body,
   #root {
+    /* `height: 100%` for older browsers; `min-height: 100dvh` so the layout
+       grows with the dynamic viewport on iOS Safari (URL bar collapse/expand
+       during scroll). Without dvh, fixed bottom elements appeared to "stick"
+       mid-screen while content reflowed underneath. */
     height: 100%;
+    min-height: 100dvh;
     background: #f5e6d3; /* panini-cream — never pure white */
     color: #1a1a1a;
     font-family: 'DM Sans', system-ui, sans-serif;
@@ -15,6 +20,11 @@
   }
   body {
     overscroll-behavior-y: none;
+    /* Disable scroll-anchoring globally: dynamic lists (sticker grid, stats
+       category lists) reflow while the user scrolls and the browser's anchor
+       guess can push the viewport, leaving the fixed bottom nav apparently
+       detached from the bottom edge. */
+    overflow-anchor: none;
   }
   *:focus-visible {
     outline: 3px solid #f4c430;
