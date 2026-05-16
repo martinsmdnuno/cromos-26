@@ -1,13 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  normalizeSpokenStickers,
-  parseStickerList,
-  stickerLabel,
-  type CollectionMap,
-} from '@cromos/shared';
+import { parseStickerList, stickerLabel, type CollectionMap } from '@cromos/shared';
 import { api } from '../api';
-import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useT } from '../i18n/LangContext';
 
 interface Props {
@@ -18,38 +12,17 @@ interface Props {
 /**
  * Fast-entry modal for "I just opened a pack" or "I want to import a list".
  *
- * Three input paths, all funneling through the same `parseStickerList` parser:
- *   - Type / paste: any whitespace/comma/semicolon/newline-separated codes
- *     (POR3, FWC14, MEX1, 245, 00).
- *   - Voice: tap the mic and say "POR um POR três FWC catorze" (PT) or
- *     "P O R one P O R three" (EN). Recognised text is normalised to the
- *     canonical label form and appended to the textarea, where the user can
- *     edit before submitting.
+ * Input goes through `parseStickerList`: any whitespace / comma / semicolon /
+ * newline-separated codes work (POR3, FWC14, MEX1, 245, 00).
  *
  * Submission goes through POST /api/collection/bulk with counts = current +
  * delta, so it's one round trip regardless of pack size.
  */
 export function PackModal({ collection, onClose }: Props) {
-  const { t, lang } = useT();
+  const { t } = useT();
   const qc = useQueryClient();
   const [raw, setRaw] = useState('');
   const taRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const speechLang = lang === 'pt' ? 'pt-PT' : 'en-US';
-  const speech = useSpeechRecognition({ lang: speechLang });
-
-  // When new final-transcript text arrives, normalise + append to the textarea
-  // and reset the recognised buffer. Using a ref guard so we only consume each
-  // chunk once even though `transcript` is a cumulative string.
-  const consumedLen = useRef(0);
-  useEffect(() => {
-    if (speech.transcript.length === consumedLen.current) return;
-    const fresh = speech.transcript.slice(consumedLen.current);
-    consumedLen.current = speech.transcript.length;
-    const normalised = normalizeSpokenStickers(fresh, lang);
-    if (!normalised) return;
-    setRaw((prev) => (prev ? `${prev.replace(/\s+$/, '')} ${normalised} ` : `${normalised} `));
-  }, [speech.transcript, lang]);
 
   useEffect(() => {
     taRef.current?.focus();
@@ -88,11 +61,6 @@ export function PackModal({ collection, onClose }: Props) {
 
   const total = parsed.numbers.length;
 
-  const toggleMic = () => {
-    if (speech.isListening) speech.stop();
-    else speech.start();
-  };
-
   return (
     <div
       className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4"
@@ -114,48 +82,18 @@ export function PackModal({ collection, onClose }: Props) {
         </div>
         <p className="label-mono opacity-60 mt-1">{t('pack.hint')}</p>
 
-        <div className="relative mt-3">
+        <div className="mt-3">
           <textarea
             ref={taRef}
             value={raw}
             onChange={(e) => setRaw(e.target.value)}
             placeholder={t('pack.placeholder')}
-            className="w-full h-28 border-2 border-panini-ink rounded-xl pl-3 pr-12 py-2 bg-panini-cream font-mono text-[13px] resize-none focus:outline-none"
+            className="w-full h-28 border-2 border-panini-ink rounded-xl px-3 py-2 bg-panini-cream font-mono text-[13px] resize-none focus:outline-none"
             autoComplete="off"
             autoCapitalize="characters"
             spellCheck={false}
           />
-          {speech.supported && (
-            <button
-              type="button"
-              onClick={toggleMic}
-              aria-label={
-                speech.isListening ? t('pack.mic_stop_aria') : t('pack.mic_start_aria')
-              }
-              aria-pressed={speech.isListening}
-              className={`absolute right-2 top-2 w-9 h-9 rounded-full border-2 border-panini-ink flex items-center justify-center transition-colors ${
-                speech.isListening
-                  ? 'bg-panini-red text-white animate-pulse'
-                  : 'bg-white hover:bg-panini-cream'
-              }`}
-              title={speech.isListening ? t('pack.mic_stop') : t('pack.mic_start')}
-            >
-              <span aria-hidden="true">🎤</span>
-            </button>
-          )}
         </div>
-
-        {/* Live transcript while listening */}
-        {speech.isListening && (
-          <div className="mt-2 label-mono opacity-70 italic min-h-[14px]" aria-live="polite">
-            {speech.interim || t('pack.mic_listening')}
-          </div>
-        )}
-        {speech.error && speech.error !== 'aborted' && (
-          <p className="mt-2 label-mono text-panini-red">
-            {t('pack.mic_error', { err: speech.error })}
-          </p>
-        )}
 
         {/* Preview */}
         <div className="mt-3 min-h-[44px]">
