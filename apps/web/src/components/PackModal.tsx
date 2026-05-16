@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { parseStickerList, stickerLabel, type CollectionMap } from '@cromos/shared';
+import {
+  extractStickerCodesFromOcr,
+  parseStickerList,
+  stickerLabel,
+  type CollectionMap,
+} from '@cromos/shared';
 import { api } from '../api';
 import { useT } from '../i18n/LangContext';
 
@@ -9,11 +14,22 @@ interface Props {
   onClose: () => void;
 }
 
+type OcrPhase =
+  | { kind: 'idle' }
+  | { kind: 'loading' } // downloading / initializing the engine
+  | { kind: 'recognizing'; pct: number } // running OCR on the photo
+  | { kind: 'error'; msg: string };
+
 /**
  * Fast-entry modal for "I just opened a pack" or "I want to import a list".
  *
- * Input goes through `parseStickerList`: any whitespace / comma / semicolon /
- * newline-separated codes work (POR3, FWC14, MEX1, 245, 00).
+ * Two input paths, both funneling through the same `parseStickerList` parser:
+ *   - Type / paste: any whitespace/comma/semicolon/newline-separated codes
+ *     (POR3, FWC14, MEX1, 245, 00).
+ *   - Photo: tap the camera button, snap the 7 sticker backs lined up on a
+ *     surface. Tesseract.js (lazy-loaded) runs OCR locally on-device, we
+ *     filter via the 48-prefix whitelist, and the extracted codes are
+ *     appended to the textarea where the user can review before submitting.
  *
  * Submission goes through POST /api/collection/bulk with counts = current +
  * delta, so it's one round trip regardless of pack size.
@@ -22,7 +38,9 @@ export function PackModal({ collection, onClose }: Props) {
   const { t } = useT();
   const qc = useQueryClient();
   const [raw, setRaw] = useState('');
+  const [ocr, setOcr] = useState<OcrPhase>({ kind: 'idle' });
   const taRef = useRef<HTMLTextAreaElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     taRef.current?.focus();
@@ -61,6 +79,45 @@ export function PackModal({ collection, onClose }: Props) {
 
   const total = parsed.numbers.length;
 
+  const onPhoto = async (file: File) => {
+    setOcr({ kind: 'loading' });
+    try {
+      // Lazy-import tesseract.js so the ~2 MB chunk only loads on first use.
+      const { createWorker } = await import('tesseract.js');
+      const worker = await createWorker('eng', 1, {
+        logger: (m: { status: string; progress: number }) => {
+          if (m.status === 'recognizing text') {
+            setOcr({ kind: 'recognizing', pct: Math.round(m.progress * 100) });
+          }
+        },
+      });
+      // Bias for the only characters the sticker badges contain — boosts both
+      // speed and accuracy and eliminates whole categories of false positives.
+      await worker.setParameters({
+        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ',
+      });
+      const {
+        data: { text },
+      } = await worker.recognize(file);
+      await worker.terminate();
+      const extracted = extractStickerCodesFromOcr(text);
+      if (!extracted) {
+        setOcr({ kind: 'error', msg: t('pack.photo_none_found') });
+        return;
+      }
+      // Append to existing input rather than overwrite — matches the old
+      // voice flow's behaviour and lets users stack multiple photos.
+      setRaw((prev) => (prev ? `${prev.replace(/\s+$/, '')} ${extracted} ` : `${extracted} `));
+      setOcr({ kind: 'idle' });
+    } catch (err) {
+      console.error('[ocr]', err);
+      setOcr({
+        kind: 'error',
+        msg: err instanceof Error ? err.message : t('pack.photo_error_generic'),
+      });
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4"
@@ -82,18 +139,56 @@ export function PackModal({ collection, onClose }: Props) {
         </div>
         <p className="label-mono opacity-60 mt-1">{t('pack.hint')}</p>
 
-        <div className="mt-3">
+        <div className="relative mt-3">
           <textarea
             ref={taRef}
             value={raw}
             onChange={(e) => setRaw(e.target.value)}
             placeholder={t('pack.placeholder')}
-            className="w-full h-28 border-2 border-panini-ink rounded-xl px-3 py-2 bg-panini-cream font-mono text-[13px] resize-none focus:outline-none"
+            className="w-full h-28 border-2 border-panini-ink rounded-xl pl-3 pr-12 py-2 bg-panini-cream font-mono text-[13px] resize-none focus:outline-none"
             autoComplete="off"
             autoCapitalize="characters"
             spellCheck={false}
           />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              // Reset so re-picking the same file still triggers onChange.
+              e.target.value = '';
+              if (f) void onPhoto(f);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={ocr.kind === 'loading' || ocr.kind === 'recognizing'}
+            aria-label={t('pack.photo_aria')}
+            title={t('pack.photo_title')}
+            className="absolute right-2 top-2 w-9 h-9 rounded-full border-2 border-panini-ink flex items-center justify-center bg-white hover:bg-panini-cream disabled:opacity-50 transition-colors"
+          >
+            <span aria-hidden="true">📷</span>
+          </button>
         </div>
+
+        {/* OCR status line */}
+        {ocr.kind === 'loading' && (
+          <div className="mt-2 label-mono opacity-70 italic" aria-live="polite">
+            {t('pack.photo_loading')}
+          </div>
+        )}
+        {ocr.kind === 'recognizing' && (
+          <div className="mt-2 label-mono opacity-70 italic" aria-live="polite">
+            {t('pack.photo_recognizing', { pct: ocr.pct })}
+          </div>
+        )}
+        {ocr.kind === 'error' && (
+          <p className="mt-2 label-mono text-panini-red">{ocr.msg}</p>
+        )}
 
         {/* Preview */}
         <div className="mt-3 min-h-[44px]">
