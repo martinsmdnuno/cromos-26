@@ -1,7 +1,6 @@
 export * from './types.js';
 export * from './stickers.js';
 export * from './trade-optimizer.js';
-export * from './voice.js';
 
 /** Generate a 6-character uppercase alphanumeric invite code (excluding 0/O/I/1 to avoid confusion). */
 export function generateInviteCode(): string {
