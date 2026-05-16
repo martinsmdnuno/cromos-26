@@ -263,11 +263,13 @@ function ShareButton({ code, groupName }: { code: string; groupName: string }) {
 
 function TradeCard({ trade }: { trade: TradeSuggestion }) {
   const { t } = useT();
+  const [expanded, setExpanded] = useState(false);
   const limit = 4;
-  const aPreview = trade.aGives.slice(0, limit);
-  const aRest = trade.aGives.length - aPreview.length;
-  const bPreview = trade.bGives.slice(0, limit);
-  const bRest = trade.bGives.length - bPreview.length;
+  const aVisible = expanded ? trade.aGives : trade.aGives.slice(0, limit);
+  const aRest = trade.aGives.length - aVisible.length;
+  const bVisible = expanded ? trade.bGives : trade.bGives.slice(0, limit);
+  const bRest = trade.bGives.length - bVisible.length;
+  const canCollapse = expanded && (trade.aGives.length > limit || trade.bGives.length > limit);
 
   return (
     <article
@@ -286,15 +288,25 @@ function TradeCard({ trade }: { trade: TradeSuggestion }) {
       <div className="grid grid-cols-2 gap-px bg-panini-ink">
         <TradeSide
           title={`${trade.aName.toUpperCase()} ${t('group.gives')}`}
-          numbers={aPreview}
+          numbers={aVisible}
           extra={aRest}
+          showCollapse={canCollapse}
           variant="give"
+          onExpand={() => setExpanded(true)}
+          onCollapse={() => setExpanded(false)}
+          totalCount={trade.aGives.length}
+          t={t}
         />
         <TradeSide
           title={`${trade.bName.toUpperCase()} ${t('group.gives')}`}
-          numbers={bPreview}
+          numbers={bVisible}
           extra={bRest}
+          showCollapse={canCollapse}
           variant="get"
+          onExpand={() => setExpanded(true)}
+          onCollapse={() => setExpanded(false)}
+          totalCount={trade.bGives.length}
+          t={t}
         />
       </div>
     </article>
@@ -305,14 +317,26 @@ function TradeSide({
   title,
   numbers,
   extra,
+  showCollapse,
   variant,
+  onExpand,
+  onCollapse,
+  totalCount,
+  t,
 }: {
   title: string;
   numbers: number[];
   extra: number;
+  showCollapse: boolean;
   variant: 'give' | 'get';
+  onExpand: () => void;
+  onCollapse: () => void;
+  totalCount: number;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
   const bg = variant === 'give' ? '#6FBE44' : '#2FB8AB';
+  const chipBase =
+    'font-mono text-[10px] font-bold border border-panini-ink rounded px-1.5 py-0.5';
   return (
     <div className="bg-white px-2.5 py-2">
       <div className="label-mono opacity-60">{title}</div>
@@ -320,19 +344,33 @@ function TradeSide({
         {numbers.map((n) => (
           <span
             key={n}
-            className="font-mono text-[10px] font-bold border border-panini-ink rounded px-1.5 py-0.5"
+            className={chipBase}
             style={{ background: bg, color: '#1A1A1A' }}
           >
             {stickerLabel(n)}
           </span>
         ))}
         {extra > 0 && (
-          <span
-            className="font-mono text-[10px] font-bold border border-panini-ink rounded px-1.5 py-0.5"
+          <button
+            type="button"
+            onClick={onExpand}
+            className={`${chipBase} cursor-pointer hover:brightness-95 active:brightness-90`}
             style={{ background: bg, color: '#1A1A1A' }}
+            aria-label={t('group.show_all_aria', { n: totalCount })}
           >
             +{extra}
-          </span>
+          </button>
+        )}
+        {showCollapse && extra === 0 && (
+          <button
+            type="button"
+            onClick={onCollapse}
+            className={`${chipBase} cursor-pointer hover:brightness-95 active:brightness-90`}
+            style={{ background: bg, color: '#1A1A1A' }}
+            aria-label={t('group.show_less_aria')}
+          >
+            −
+          </button>
         )}
       </div>
     </div>
