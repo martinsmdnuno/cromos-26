@@ -296,6 +296,41 @@ export function parseStickerList(raw: string): { numbers: number[]; unknown: str
 }
 
 /**
+ * Extract canonical sticker tokens from raw OCR text (e.g. produced by
+ * Tesseract.js scanning a photo of sticker backs).
+ *
+ * Each Panini WC26 sticker back shows the code in a dark badge top-right
+ * (e.g. `JOR 7`, `TUR 12`, `FWC 4`). OCR also picks up boilerplate like
+ * `FIFA WORLD CUP 2026` and the copyright footer — we filter aggressively
+ * against the canonical set of valid prefixes (`TEAM_CODES ∪ {'FWC'}`) so
+ * stray uppercase words become noise we drop instead of fake tokens.
+ *
+ * Returns a space-joined string in the same shape `parseStickerList`
+ * already consumes; safe to drop straight into the pack-modal textarea.
+ */
+export function extractStickerCodesFromOcr(rawOcr: string): string {
+  if (!rawOcr) return '';
+  const validPrefixes = new Set<string>(['FWC', ...TEAM_CODES]);
+  const out: string[] = [];
+  // Allow optional whitespace between the prefix and the number ("JOR 7" or "JOR7").
+  // Duplicates are preserved on purpose — two stickers with the same code in
+  // one packet appear as two badges in the photo and the user wants both
+  // counted. The pack modal's preview groups them visually as `POR7 ×2`.
+  const re = /\b([A-Z]{3})\s*0*(\d{1,2})\b/g;
+  const upper = rawOcr.toUpperCase();
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(upper)) !== null) {
+    const prefix = m[1]!;
+    if (!validPrefixes.has(prefix)) continue;
+    const n = Number(m[2]!);
+    // FWC valid range is 1..19; team codes 1..20.
+    if (prefix === 'FWC' ? n < 1 || n > 19 : n < 1 || n > 20) continue;
+    out.push(`${prefix}${n}`);
+  }
+  return out.join(' ');
+}
+
+/**
  * Does the sticker `num`'s label match this search query?
  *
  * Designed to feel forgiving:
