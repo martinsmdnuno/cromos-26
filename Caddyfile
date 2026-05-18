@@ -48,3 +48,23 @@ stickers.martinsnuno.com {
 	# 	format json
 	# }
 }
+
+# === Sites tertios proxied through this Caddy ===
+# These hosts share the server but live in other docker-compose projects.
+# We reach their containers via the cromos-26 network gateway (host bridge).
+
+grapedeal.pt, www.grapedeal.pt {
+    reverse_proxy 172.20.0.1:3000
+}
+
+grapedeal.duckdns.org {
+    redir https://grapedeal.pt{uri} permanent
+}
+
+casa.martinsnuno.com {
+    reverse_proxy 172.20.0.1:3001
+}
+
+limpezas.duckdns.org {
+    reverse_proxy 172.20.0.1:3001
+}
