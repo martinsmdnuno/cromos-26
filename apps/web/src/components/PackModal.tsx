@@ -41,6 +41,9 @@ export function PackModal({ collection, onClose }: Props) {
   const [ocr, setOcr] = useState<OcrPhase>({ kind: 'idle' });
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  // Used to distinguish "photo OCR fed the codes" vs "user typed/pasted them"
+  // so the /history page can show the correct icon (📷 vs 📦).
+  const usedOcrRef = useRef(false);
 
   useEffect(() => {
     taRef.current?.focus();
@@ -68,7 +71,10 @@ export function PackModal({ collection, onClose }: Props) {
         number,
         count: Math.min(99, (collection[number] ?? 0) + delta),
       }));
-      return api.post<{ updated: number }>('/api/collection/bulk', { items });
+      return api.post<{ updated: number }>('/api/collection/bulk', {
+        items,
+        source: usedOcrRef.current ? 'photo' : 'pack',
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['collection'] });
@@ -108,6 +114,7 @@ export function PackModal({ collection, onClose }: Props) {
       // Append to existing input rather than overwrite — matches the old
       // voice flow's behaviour and lets users stack multiple photos.
       setRaw((prev) => (prev ? `${prev.replace(/\s+$/, '')} ${extracted} ` : `${extracted} `));
+      usedOcrRef.current = true;
       setOcr({ kind: 'idle' });
     } catch (err) {
       console.error('[ocr]', err);

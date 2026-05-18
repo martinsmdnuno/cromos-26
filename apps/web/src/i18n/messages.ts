@@ -46,6 +46,7 @@ export const en: Dict = {
   'menu.open_aria': 'Open profile menu',
   'menu.admin': 'Admin',
   'menu.profile': 'Profile',
+  'menu.history': 'History',
   'menu.feedback': 'Send feedback',
   'menu.terms': 'Terms of use',
   'menu.privacy': 'Privacy policy',
@@ -283,6 +284,16 @@ export const en: Dict = {
   'category.team-46': 'Croatia',
   'category.team-47': 'Ghana',
   'category.team-48': 'Panama',
+
+  // History page
+  'history.title': 'HISTORY',
+  'history.subtitle': 'Every sticker you added or removed, newest first.',
+  'history.today': 'Today',
+  'history.yesterday': 'Yesterday',
+  'history.loading': 'Loading…',
+  'history.loading_more': 'Loading more…',
+  'history.empty': 'No changes yet. Tap a sticker or open a pack to start building your history.',
+  'history.error': 'Could not load history. Please try again.',
 };
 
 export const pt: Dict = {
@@ -307,6 +318,7 @@ export const pt: Dict = {
   'menu.open_aria': 'Abrir menu do perfil',
   'menu.admin': 'Admin',
   'menu.profile': 'Perfil',
+  'menu.history': 'Histórico',
   'menu.feedback': 'Enviar feedback',
   'menu.terms': 'Termos de utilização',
   'menu.privacy': 'Política de privacidade',
@@ -542,6 +554,16 @@ export const pt: Dict = {
   'category.team-46': 'Croácia',
   'category.team-47': 'Gana',
   'category.team-48': 'Panamá',
+
+  // History page
+  'history.title': 'HISTÓRICO',
+  'history.subtitle': 'Cada cromo que adicionaste ou removeste, do mais recente para o mais antigo.',
+  'history.today': 'Hoje',
+  'history.yesterday': 'Ontem',
+  'history.loading': 'A carregar…',
+  'history.loading_more': 'A carregar mais…',
+  'history.empty': 'Ainda sem alterações. Toca num cromo ou abre uma saqueta para começares.',
+  'history.error': 'Não foi possível carregar o histórico. Tenta novamente.',
 };
 
 export const DICTS: Record<Lang, Dict> = { en, pt };
