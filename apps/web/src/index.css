@@ -128,3 +128,28 @@
   font-weight: 700;
   font-family: 'JetBrains Mono', monospace;
 }
+
+/* Lock-mode feedback: when a tap lands on a locked tile, we briefly toggle
+   .shaking via JS and the tile wiggles to signal "I heard you but I'm
+   locked". Kept short and subtle to feel like a button refusal, not an error. */
+@keyframes locked-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-3px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+.sticker-tile.shaking {
+  animation: locked-shake 0.35s ease-in-out;
+}
