@@ -1,4 +1,4 @@
-import { memo, useRef } from 'react';
+import { memo, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { categoryForSticker, PALETTE, stickerLabel } from '@cromos/shared';
 import { useT } from '../i18n/LangContext';
@@ -24,6 +24,11 @@ interface Props {
   onTap: (number: number, next: number) => void;
   /** Long press: open count editor. */
   onLongPress: (number: number) => void;
+  /** When true: tap & long-press are intercepted, the tile shakes, and
+   *  `onBlocked` fires so the parent can show a hint near the lock toggle. */
+  locked: boolean;
+  /** Fires when the user tries to interact with a locked tile. */
+  onBlocked: () => void;
 }
 
 const LONG_PRESS_MS = 450;
@@ -51,6 +56,8 @@ export const StickerTile = memo(function StickerTile({
   count,
   onTap,
   onLongPress,
+  locked,
+  onBlocked,
 }: Props) {
   const { t } = useT();
   const cat = categoryForSticker(number);
@@ -66,8 +73,22 @@ export const StickerTile = memo(function StickerTile({
   // True once the long-press timer has fired and the modal opened. Used to
   // swallow the click that follows when the user finally lifts their finger.
   const longPressFired = useRef(false);
+  // Local shake-on-blocked-tap state. Lives inside the tile so the parent
+  // doesn't need to track which-tile-is-shaking and re-render the grid.
+  const [shaking, setShaking] = useState(false);
+  const shakeTimer = useRef<number | null>(null);
+
+  const triggerShake = () => {
+    setShaking(true);
+    if (shakeTimer.current !== null) clearTimeout(shakeTimer.current);
+    shakeTimer.current = window.setTimeout(() => {
+      setShaking(false);
+      shakeTimer.current = null;
+    }, 380);
+  };
 
   const startLongPress = () => {
+    if (locked) return; // disable long-press entirely while locked
     longPressFired.current = false;
     if (longPressTimer.current !== null) clearTimeout(longPressTimer.current);
     longPressTimer.current = window.setTimeout(() => {
@@ -92,6 +113,12 @@ export const StickerTile = memo(function StickerTile({
       e.preventDefault();
       return;
     }
+    if (locked) {
+      e.preventDefault();
+      triggerShake();
+      onBlocked();
+      return;
+    }
     onTap(number, isOwned ? 0 : 1);
   };
 
@@ -110,7 +137,12 @@ export const StickerTile = memo(function StickerTile({
   return (
     <button
       type="button"
-      className={clsx('sticker-tile', !isOwned && 'missing', isDup && 'dup')}
+      className={clsx(
+        'sticker-tile',
+        !isOwned && 'missing',
+        isDup && 'dup',
+        shaking && 'shaking',
+      )}
       style={isOwned ? { background: teamColor, color: textColor } : undefined}
       data-count={isDup ? count : undefined}
       onPointerDown={startLongPress}

@@ -19,6 +19,10 @@ type Filter = 'all' | 'owned' | 'missing' | 'duplicates' | 'almost';
 /** ≥70% complete and not done yet — "almost there, push to finish" view. */
 const ALMOST_THRESHOLD = 0.7;
 const PREFS_KEY = 'cromos.collection.prefs.v1';
+/** Persists the lock toggle (browse-only vs editing). Default = unlocked. */
+const LOCK_KEY = 'cromos.collection.locked.v1';
+/** How long the "tap the 🔒 to edit" hint stays visible after a blocked tap. */
+const HINT_MS = 2500;
 
 interface Prefs {
   filter: Filter;
@@ -44,6 +48,15 @@ function loadPrefs(): Prefs {
   }
 }
 
+function loadLocked(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem(LOCK_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
 export function Collection() {
   const qc = useQueryClient();
   const { t } = useT();
@@ -60,6 +73,8 @@ export function Collection() {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<number | null>(null);
   const [packOpen, setPackOpen] = useState(false);
+  const [locked, setLocked] = useState<boolean>(loadLocked);
+  const [hintVisible, setHintVisible] = useState(false);
 
   useEffect(() => {
     try {
@@ -68,6 +83,21 @@ export function Collection() {
       /* private mode etc. */
     }
   }, [filter, team]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(LOCK_KEY, locked ? '1' : '0');
+    } catch {
+      /* private mode etc. */
+    }
+  }, [locked]);
+
+  // Auto-hide the "tap the lock to edit" hint after a short delay.
+  useEffect(() => {
+    if (!hintVisible) return;
+    const id = window.setTimeout(() => setHintVisible(false), HINT_MS);
+    return () => window.clearTimeout(id);
+  }, [hintVisible]);
 
   const almostCategoryIds = useMemo(() => {
     const ids = new Set<string>();
@@ -152,6 +182,22 @@ export function Collection() {
 
   const handleLongPress = useCallback((n: number) => setEditing(n), []);
 
+  // Stable callback handed to every tile — identity must stay constant or
+  // the 980-tile grid re-renders. Triggered when a locked tile is tapped.
+  const handleBlocked = useCallback(() => {
+    setHintVisible(true);
+    track('collection.blocked_tap');
+  }, []);
+
+  const toggleLock = useCallback(() => {
+    setLocked((v) => {
+      const next = !v;
+      track(next ? 'collection.locked' : 'collection.unlocked');
+      return next;
+    });
+    setHintVisible(false);
+  }, []);
+
   return (
     <div className="px-5">
       {/* Stats strip */}
@@ -175,20 +221,46 @@ export function Collection() {
         />
       </div>
 
-      {/* Open-a-pack CTA. Sits before the filters so the most rewarding action
-          (adding stickers) is the first thing the eye lands on. */}
-      <div className="mt-3">
+      {/* Open-a-pack CTA + lock toggle. Sits before the filters so the most
+          rewarding action (adding stickers) is the first thing the eye lands
+          on; the lock pill is paired with it because both gate "is this a
+          browsing session or an editing one?". */}
+      <div className="mt-3 flex gap-2">
         <button
           onClick={() => {
             track('pack.opened');
             setPackOpen(true);
           }}
-          className="pill !bg-panini-yellow w-full !py-2 font-bold flex items-center justify-center gap-1.5"
+          className="pill !bg-panini-yellow flex-1 !py-2 font-bold flex items-center justify-center gap-1.5"
         >
           <span aria-hidden="true">📦</span>
           <span>{t('collection.open_pack')}</span>
         </button>
+        <button
+          onClick={toggleLock}
+          aria-pressed={locked}
+          aria-label={locked ? t('collection.lock.unlock_aria') : t('collection.lock.lock_aria')}
+          title={locked ? t('collection.lock.unlock_title') : t('collection.lock.lock_title')}
+          className={`pill !py-2 !px-3 font-bold flex items-center gap-1.5 ${
+            locked ? '!bg-panini-yellow' : '!bg-white'
+          }`}
+        >
+          <span aria-hidden="true">{locked ? '🔒' : '🔓'}</span>
+          <span className="hidden sm:inline">
+            {locked ? t('collection.lock.locked') : t('collection.lock.unlocked')}
+          </span>
+        </button>
       </div>
+      {hintVisible && (
+        <p
+          className="mt-2 label-mono text-panini-red flex items-center gap-1"
+          role="status"
+          aria-live="polite"
+        >
+          <span aria-hidden="true">🔒</span>
+          <span>{t('collection.lock.hint')}</span>
+        </p>
+      )}
 
       {/* Filter chips */}
       <div className="mt-2 flex gap-2 overflow-x-auto no-scrollbar">
@@ -265,6 +337,8 @@ export function Collection() {
               collection={collection}
               onTap={handleTap}
               onLongPress={handleLongPress}
+              locked={locked}
+              onBlocked={handleBlocked}
             />
           );
         })}
@@ -319,12 +393,16 @@ function CategorySection({
   collection,
   onTap,
   onLongPress,
+  locked,
+  onBlocked,
 }: {
   cat: CategoryDef;
   stickers: number[];
   collection: Record<number, number>;
   onTap: (n: number, next: number) => void;
   onLongPress: (n: number) => void;
+  locked: boolean;
+  onBlocked: () => void;
 }) {
   const { t } = useT();
   const ownedCount = (() => {
@@ -362,6 +440,8 @@ function CategorySection({
             count={collection[n] ?? 0}
             onTap={onTap}
             onLongPress={onLongPress}
+            locked={locked}
+            onBlocked={onBlocked}
           />
         ))}
       </div>

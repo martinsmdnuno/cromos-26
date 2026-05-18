@@ -103,6 +103,13 @@ export const en: Dict = {
   'collection.team_aria': 'Filter by team',
   'collection.no_results': 'No stickers match these filters.',
   'collection.open_pack': 'Open a pack',
+  'collection.lock.locked': 'Locked',
+  'collection.lock.unlocked': 'Unlocked',
+  'collection.lock.lock_aria': 'Lock the album to prevent accidental edits',
+  'collection.lock.unlock_aria': 'Unlock the album to add or remove stickers',
+  'collection.lock.lock_title': 'Lock — browse without changing anything',
+  'collection.lock.unlock_title': 'Unlock — tap stickers to add or remove',
+  'collection.lock.hint': 'Album is locked — tap the 🔒 to edit.',
 
   // Pack / bulk-add modal
   'pack.title': 'OPEN A PACK',
@@ -357,6 +364,13 @@ export const pt: Dict = {
   'collection.team_aria': 'Filtrar por equipa',
   'collection.no_results': 'Nenhum cromo corresponde a estes filtros.',
   'collection.open_pack': 'Abrir saqueta',
+  'collection.lock.locked': 'Bloqueada',
+  'collection.lock.unlocked': 'Desbloqueada',
+  'collection.lock.lock_aria': 'Bloquear a caderneta para evitar toques acidentais',
+  'collection.lock.unlock_aria': 'Desbloquear a caderneta para adicionar ou remover cromos',
+  'collection.lock.lock_title': 'Bloquear — vê sem alterar nada',
+  'collection.lock.unlock_title': 'Desbloquear — toca nos cromos para adicionar ou remover',
+  'collection.lock.hint': 'Caderneta bloqueada — toca no 🔒 para editar.',
 
   // Pack / bulk-add modal
   'pack.title': 'ABRIR SAQUETA',
