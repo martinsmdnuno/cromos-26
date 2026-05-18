@@ -29,9 +29,10 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  stickers      UserSticker[]
-  memberships   GroupMembership[]
-  createdGroups Group[]           @relation("GroupCreator")
+  stickers       UserSticker[]
+  memberships    GroupMembership[]
+  createdGroups  Group[]           @relation("GroupCreator")
+  stickerHistory StickerHistory[]
 }
 
 /// Lightweight in-house analytics. Every page view + key action lands here.
@@ -63,6 +64,27 @@ model UserSticker {
 
   @@id([userId, stickerNumber])
   @@index([userId])
+}
+
+/// Append-only log of every change to a user's UserSticker count. Surfaced
+/// in the /history page so users can see when each sticker was added or
+/// removed and via what flow. Forever retention (rows are tiny).
+model StickerHistory {
+  id            String   @id @default(cuid())
+  userId        String
+  stickerNumber Int
+  /// Sticker count BEFORE this change.
+  countBefore   Int
+  /// Sticker count AFTER this change.
+  countAfter    Int
+  /// What triggered the change: 'tap' | 'long_press' | 'pack' | 'photo' | 'unknown'.
+  source        String
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, stickerNumber])
 }
 
 model Group {

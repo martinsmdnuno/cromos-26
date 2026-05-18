@@ -80,6 +80,15 @@ export function AvatarMenu() {
               <span aria-hidden="true">👤</span>
               <span>{t('menu.profile')}</span>
             </Link>
+            <Link
+              to="/history"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-panini-cream font-semibold text-sm flex items-center gap-2"
+            >
+              <span aria-hidden="true">🕒</span>
+              <span>{t('menu.history')}</span>
+            </Link>
             <button
               role="menuitem"
               onClick={() => {

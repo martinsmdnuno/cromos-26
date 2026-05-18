@@ -112,8 +112,15 @@ export function Collection() {
   }, [collection]);
 
   const setSticker = useMutation({
-    mutationFn: ({ number, count }: { number: number; count: number }) =>
-      api.put('/api/collection/sticker', { number, count }),
+    mutationFn: ({
+      number,
+      count,
+      source,
+    }: {
+      number: number;
+      count: number;
+      source: 'tap' | 'long_press';
+    }) => api.put('/api/collection/sticker', { number, count, source }),
     onMutate: async ({ number, count }) => {
       await qc.cancelQueries({ queryKey: ['collection'] });
       const prev = qc.getQueryData<{ collection: Record<number, number> }>(['collection']);
@@ -175,7 +182,7 @@ export function Collection() {
 
   const handleTap = useCallback(
     (n: number, next: number) => {
-      mutate({ number: n, count: next });
+      mutate({ number: n, count: next, source: 'tap' });
     },
     [mutate],
   );
@@ -352,7 +359,7 @@ export function Collection() {
           number={editing}
           count={collection[editing] ?? 0}
           onSave={(c) => {
-            setSticker.mutate({ number: editing, count: c });
+            setSticker.mutate({ number: editing, count: c, source: 'long_press' });
             setEditing(null);
           }}
           onClose={() => setEditing(null)}
