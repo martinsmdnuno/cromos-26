@@ -150,7 +150,11 @@ export function PackModal({ collection, onClose }: Props) {
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            capture="environment"
+            // Intentionally NO `capture` attribute — with it set, iOS/Android
+            // force-open the rear camera and skip the gallery. Leaving it off
+            // makes the OS show its native sheet ("Take Photo or Video" /
+            // "Photo Library" / "Choose File") so users can pick existing
+            // photos too. On desktop this is a plain file picker.
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0];
