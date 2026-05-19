@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  extractStickerCodesFromOcr,
-  parseStickerList,
-  stickerLabel,
-  type CollectionMap,
-} from '@cromos/shared';
+import { parseStickerList, stickerLabel, type CollectionMap } from '@cromos/shared';
 import { api } from '../api';
 import { useT } from '../i18n/LangContext';
 
@@ -16,8 +11,8 @@ interface Props {
 
 type OcrPhase =
   | { kind: 'idle' }
-  | { kind: 'loading' } // downloading / initializing the engine
-  | { kind: 'recognizing'; pct: number } // running OCR on the photo
+  | { kind: 'uploading' } // resizing + uploading the photo
+  | { kind: 'analyzing' } // server is talking to Claude
   | { kind: 'error'; msg: string };
 
 /**
@@ -27,9 +22,11 @@ type OcrPhase =
  *   - Type / paste: any whitespace/comma/semicolon/newline-separated codes
  *     (POR3, FWC14, MEX1, 245, 00).
  *   - Photo: tap the camera button, snap the 7 sticker backs lined up on a
- *     surface. Tesseract.js (lazy-loaded) runs OCR locally on-device, we
- *     filter via the 48-prefix whitelist, and the extracted codes are
- *     appended to the textarea where the user can review before submitting.
+ *     surface. The image is downsized client-side to ~1568 px max edge and
+ *     POSTed to /api/pack/photo, which forwards it to Claude vision (the
+ *     API key lives on the server, never in the bundle). Extracted codes
+ *     get appended to the textarea where the user can review before
+ *     submitting.
  *
  * Submission goes through POST /api/collection/bulk with counts = current +
  * delta, so it's one round trip regardless of pack size.
@@ -86,34 +83,26 @@ export function PackModal({ collection, onClose }: Props) {
   const total = parsed.numbers.length;
 
   const onPhoto = async (file: File) => {
-    setOcr({ kind: 'loading' });
+    setOcr({ kind: 'uploading' });
     try {
-      // Lazy-import tesseract.js so the ~2 MB chunk only loads on first use.
-      const { createWorker } = await import('tesseract.js');
-      const worker = await createWorker('eng', 1, {
-        logger: (m: { status: string; progress: number }) => {
-          if (m.status === 'recognizing text') {
-            setOcr({ kind: 'recognizing', pct: Math.round(m.progress * 100) });
-          }
-        },
+      // Downsize to ~1568 px max edge at JPEG q=0.85 before encoding — keeps
+      // upload size to ~400-700 KB while preserving the badge legibility
+      // Claude needs. (1568 px is Anthropic's documented sweet spot.)
+      const base64 = await resizeAndEncode(file, 1568, 0.85);
+
+      setOcr({ kind: 'analyzing' });
+      const res = await api.post<{ codes: string; raw: string }>('/api/pack/photo', {
+        image: base64,
+        mediaType: 'image/jpeg',
       });
-      // Bias for the only characters the sticker badges contain — boosts both
-      // speed and accuracy and eliminates whole categories of false positives.
-      await worker.setParameters({
-        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ',
-      });
-      const {
-        data: { text },
-      } = await worker.recognize(file);
-      await worker.terminate();
-      const extracted = extractStickerCodesFromOcr(text);
-      if (!extracted) {
+
+      if (!res.codes) {
         setOcr({ kind: 'error', msg: t('pack.photo_none_found') });
         return;
       }
-      // Append to existing input rather than overwrite — matches the old
-      // voice flow's behaviour and lets users stack multiple photos.
-      setRaw((prev) => (prev ? `${prev.replace(/\s+$/, '')} ${extracted} ` : `${extracted} `));
+      // Append to existing input rather than overwrite — lets users stack
+      // multiple photos and still tweak the textarea before submitting.
+      setRaw((prev) => (prev ? `${prev.replace(/\s+$/, '')} ${res.codes} ` : `${res.codes} `));
       usedOcrRef.current = true;
       setOcr({ kind: 'idle' });
     } catch (err) {
@@ -173,7 +162,7 @@ export function PackModal({ collection, onClose }: Props) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={ocr.kind === 'loading' || ocr.kind === 'recognizing'}
+            disabled={ocr.kind === 'uploading' || ocr.kind === 'analyzing'}
             aria-label={t('pack.photo_aria')}
             title={t('pack.photo_title')}
             className="absolute right-2 top-2 w-9 h-9 rounded-full border-2 border-panini-ink flex items-center justify-center bg-white hover:bg-panini-cream disabled:opacity-50 transition-colors"
@@ -183,14 +172,14 @@ export function PackModal({ collection, onClose }: Props) {
         </div>
 
         {/* OCR status line */}
-        {ocr.kind === 'loading' && (
+        {ocr.kind === 'uploading' && (
           <div className="mt-2 label-mono opacity-70 italic" aria-live="polite">
-            {t('pack.photo_loading')}
+            {t('pack.photo_uploading')}
           </div>
         )}
-        {ocr.kind === 'recognizing' && (
+        {ocr.kind === 'analyzing' && (
           <div className="mt-2 label-mono opacity-70 italic" aria-live="polite">
-            {t('pack.photo_recognizing', { pct: ocr.pct })}
+            {t('pack.photo_analyzing')}
           </div>
         )}
         {ocr.kind === 'error' && (
@@ -245,4 +234,49 @@ export function PackModal({ collection, onClose }: Props) {
       </div>
     </div>
   );
+}
+
+/**
+ * Decode the file as an image, scale so the longest edge ≤ `maxEdge`, and
+ * return the JPEG base64 (without the data-URL prefix) ready to POST.
+ * Used to keep the photo small enough for a snappy upload and well under
+ * Anthropic's 5 MB image cap.
+ */
+async function resizeAndEncode(file: File, maxEdge: number, quality: number): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error('image_decode_failed'));
+      i.src = url;
+    });
+    const longest = Math.max(img.naturalWidth, img.naturalHeight);
+    const scale = longest > maxEdge ? maxEdge / longest : 1;
+    const w = Math.round(img.naturalWidth * scale);
+    const h = Math.round(img.naturalHeight * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('canvas_unavailable');
+    ctx.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error('encode_failed'))),
+        'image/jpeg',
+        quality,
+      );
+    });
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result as string);
+      r.onerror = () => reject(new Error('read_failed'));
+      r.readAsDataURL(blob);
+    });
+    // Strip the data URL prefix; the server expects raw base64.
+    return dataUrl.replace(/^data:image\/[a-z]+;base64,/, '');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
