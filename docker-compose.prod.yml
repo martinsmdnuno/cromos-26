@@ -41,6 +41,11 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       FEEDBACK_NOTIFY_EMAIL: ${FEEDBACK_NOTIFY_EMAIL:-}
       FEEDBACK_FROM_EMAIL: ${FEEDBACK_FROM_EMAIL:-Cromos 26 <onboarding@resend.dev>}
+      # Anthropic Claude vision for /api/pack/photo. Optional — if
+      # ANTHROPIC_API_KEY is empty, the endpoint returns 503 and the
+      # frontend's camera button surfaces a clean error.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-5}
     expose:
       - '3000' # only inside the docker network
     depends_on:
