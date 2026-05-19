@@ -24,6 +24,12 @@ const schema = z.object({
    *  which only allows sending to the email the Resend account was created with —
    *  perfectly fine for this use case. Override to use a verified domain. */
   FEEDBACK_FROM_EMAIL: z.string().default('Cromos 26 <onboarding@resend.dev>'),
+  // Anthropic vision API for the /api/pack/photo OCR endpoint. Optional —
+  // if missing, the camera button on the pack modal disables itself with
+  // a "photo scan not configured" message. The model is overridable so
+  // we can A/B Haiku vs Sonnet without redeploying.
+  ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-5'),
 });
 
 const parsed = schema.safeParse(process.env);
