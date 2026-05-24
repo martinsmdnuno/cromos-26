@@ -233,6 +233,63 @@ export function stickerLabel(num: number): string {
   return `${cat.prefix}${positionInTeam}`;
 }
 
+/**
+ * Position of a sticker *within its album section*, as printed under the section
+ * heading on a checklist:
+ *
+ *  - #1            → `00`        (Panini silver foil)
+ *  - #2..#20       → `1..19`     (FWC section — opening + FIFA Museum share one heading)
+ *  - team stickers → `1..20`
+ *
+ * Unlike `stickerLabel`, this drops the prefix because the section heading already
+ * carries it (e.g. the row labelled `POR` lists `1 2 5 …`, not `POR1 POR2 POR5`).
+ */
+export function stickerPositionLabel(num: number): string {
+  if (num === 1) return '00';
+  const cat = categoryForSticker(num);
+  if (cat.prefix === 'FWC') return String(num - 1);
+  return String(num - cat.range[0] + 1);
+}
+
+/** One album section (FWC block or a single team) with the positions still missing. */
+export interface MissingSection {
+  /** 3-letter section code: `FWC` for the opening + museum block, else the team code. */
+  code: string;
+  /** 0-based album index of the team (Mexico = 0 … Panama = 47), or `null` for the FWC block. */
+  teamIndex: number | null;
+  /** Missing positions within the section, in ascending album order (e.g. `['00','1','7']`). */
+  positions: string[];
+}
+
+/**
+ * Group a list of missing sticker numbers into album-ordered sections: the FWC block
+ * (opening + FIFA Museum, sharing one `FWC` heading) first, then the 48 teams in album
+ * order. Sections with nothing missing are omitted. Input may be unsorted and contain
+ * duplicates; output positions are de-duplicated and sorted ascending.
+ *
+ * Drives the printable "missing stickers" checklist — one row per section, the prefix in
+ * the heading, the bare positions listed after it.
+ */
+export function groupMissingBySection(missing: number[]): MissingSection[] {
+  const sorted = [...new Set(missing)].sort((a, b) => a - b);
+  const sections: MissingSection[] = [];
+  let current: MissingSection | null = null;
+  for (const n of sorted) {
+    if (n < 1 || n > TOTAL_STICKERS) continue;
+    const code = categoryForSticker(n).prefix;
+    if (!current || current.code !== code) {
+      current = {
+        code,
+        teamIndex: code === 'FWC' ? null : TEAM_CODES.indexOf(code),
+        positions: [],
+      };
+      sections.push(current);
+    }
+    current.positions.push(stickerPositionLabel(n));
+  }
+  return sections;
+}
+
 // Reverse lookup: 3-letter code -> 0-based team index (Mexico = 0, Panama = 47).
 const CODE_TO_TEAM_INDEX: Map<string, number> = (() => {
   const m = new Map<string, number>();

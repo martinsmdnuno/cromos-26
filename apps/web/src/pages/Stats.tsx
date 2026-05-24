@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
-import { PALETTE, stickerLabel, type PaletteKey } from '@cromos/shared';
+import { groupMissingBySection, PALETTE, stickerLabel, type PaletteKey } from '@cromos/shared';
 import { Trophy } from '../components/Trophy';
 import { useT } from '../i18n/LangContext';
+import { downloadMissingPdf } from '../lib/missingPdf';
 
 interface StatsResponse {
   total: number;
@@ -164,10 +165,38 @@ function Block({
 }
 
 function MissingList({ numbers }: { numbers: number[] }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const text = useMemo(() => numbers.map((n) => stickerLabel(n)).join(', '), [numbers]);
+
+  async function exportPdf() {
+    if (exporting || numbers.length === 0) return;
+    setExporting(true);
+    try {
+      const sections = groupMissingBySection(numbers).map((g) => ({
+        code: g.code,
+        name: g.teamIndex === null ? t('pdf.fwc_name') : t(`category.team-${g.teamIndex + 1}`),
+        positions: g.positions,
+      }));
+      const date = new Date().toLocaleDateString(lang === 'pt' ? 'pt-PT' : 'en-GB');
+      await downloadMissingPdf({
+        sections,
+        strings: {
+          title: t('pdf.title'),
+          subtitle: t('pdf.subtitle', { total: numbers.length, sections: sections.length }),
+          footerNote: t('pdf.footer_note'),
+          generatedOn: t('pdf.generated_on', { date }),
+          fileName: t('pdf.filename'),
+        },
+      });
+    } catch {
+      /* ignore — nothing downloads, user can retry */
+    } finally {
+      setExporting(false);
+    }
+  }
 
   return (
     <section className="mt-5">
@@ -197,6 +226,13 @@ function MissingList({ numbers }: { numbers: number[] }) {
             {copied ? t('stats.copied') : t('stats.copy_all')}
           </button>
         </div>
+        <button
+          onClick={exportPdf}
+          disabled={exporting || numbers.length === 0}
+          className="pill w-full mt-2 bg-panini-blue text-white disabled:opacity-50"
+        >
+          {exporting ? t('pdf.exporting') : t('stats.export_pdf')}
+        </button>
         {open && (
           <pre
             className="mt-3 font-mono text-[11px] whitespace-pre-wrap break-words bg-panini-cream border-2 border-panini-ink rounded-lg p-3 max-h-72 overflow-auto"
