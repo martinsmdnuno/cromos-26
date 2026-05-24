@@ -220,6 +220,14 @@ export const en: Dict = {
   'stats.copy_all': 'Copy all',
   'stats.copied': 'Copied!',
   'stats.complete': 'None — you have them all!',
+  'stats.export_pdf': 'Export PDF',
+  'pdf.exporting': 'Generating…',
+  'pdf.title': 'Missing stickers — Panini FIFA World Cup 26',
+  'pdf.subtitle': '{total} missing stickers · {sections} sections · ordered by section (album order)',
+  'pdf.footer_note': 'Stickers needed to complete the album. Number = position within the section.',
+  'pdf.generated_on': 'Generated on {date}',
+  'pdf.filename': 'missing-stickers.pdf',
+  'pdf.fwc_name': 'FIFA World Cup',
 
   // Cross-sell — wc26 (sister app: predictions + betting pool).
   'cross.toolkit_label': 'YOUR WORLD CUP 2026 TOOLKIT',
@@ -492,6 +500,15 @@ export const pt: Dict = {
   'stats.copy_all': 'Copiar tudo',
   'stats.copied': 'Copiado!',
   'stats.complete': 'Nenhum — tens todos!',
+  'stats.export_pdf': 'Exportar PDF',
+  'pdf.exporting': 'A gerar…',
+  'pdf.title': 'Cromos em falta — Panini FIFA World Cup 26',
+  'pdf.subtitle':
+    '{total} cromos em falta · {sections} seleções · ordenados por seleção (ordem do álbum)',
+  'pdf.footer_note': 'Cromos em falta para completar o álbum. Número = posição do cromo no álbum.',
+  'pdf.generated_on': 'Gerado a {date}',
+  'pdf.filename': 'cromos-em-falta.pdf',
+  'pdf.fwc_name': 'FIFA World Cup',
 
   // Cross-sell — wc26.
   'cross.toolkit_label': 'O TEU TOOLKIT DO MUNDIAL 2026',

@@ -29,7 +29,9 @@ optimiser, and add a whole pack with one paste.
 - **Multi-trade optimiser** — finds balanced N-for-N swaps across a group; works even
   when the obvious 1-for-1 trade isn't available.
 - **Direct trades view** — pick a friend, see what they have that you need and vice versa.
-- **Stats hero + missing list** — copy your missing numbers in one tap to share in a chat.
+- **Stats hero + missing list** — copy your missing numbers in one tap to share in a chat,
+  or export them as a printable PDF checklist (grouped by section, in album order) to take
+  to the kiosk.
 - **Bilingual** — full Portuguese (PT-PT) and English. Auto-detects from browser locale.
 - **Google sign-in** — optional, alongside the email + password flow. JWT in an
   `httpOnly` cookie, no localStorage tokens.
