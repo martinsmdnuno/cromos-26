@@ -6,10 +6,15 @@ const BASE = ''; // empty = same origin
 export type ApiError = { error: string; status: number };
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
+  // Only advertise a JSON body when we actually send one. Fastify rejects an
+  // empty body that declares `application/json` (FST_ERR_CTP_EMPTY_JSON_BODY),
+  // which silently broke every bodyless request — logout and group delete/leave.
+  const headers = new Headers(init?.headers);
+  if (init?.body != null) headers.set('Content-Type', 'application/json');
   const res = await fetch(BASE + path, {
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
     ...init,
+    headers,
   });
   if (!res.ok) {
     let body: { error?: string } = {};
