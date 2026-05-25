@@ -1,7 +1,8 @@
-import Fastify from 'fastify';
+import Fastify, { type FastifyError } from 'fastify';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import jwt from '@fastify/jwt';
+import rateLimit from '@fastify/rate-limit';
 import { env } from './env.js';
 import { COOKIE_NAME } from './auth.js';
 import { authRoutes } from './routes/auth.js';
@@ -33,6 +34,31 @@ export function buildServer() {
     secret: env.JWT_SECRET,
     cookie: { cookieName: COOKIE_NAME, signed: false },
     sign: { expiresIn: env.JWT_EXPIRES_IN },
+  });
+
+  // Anti-abuse rate limiting, keyed by client IP (trustProxy resolves the real
+  // IP behind Caddy). The generous global cap stops runaway loops; the
+  // expensive/abusable routes (pack/photo, feedback) tighten this per-route via
+  // their own `config.rateLimit`. In-memory store is fine for the single API
+  // instance this app runs.
+  app.register(rateLimit, {
+    global: true,
+    max: 300,
+    timeWindow: '1 minute',
+    // The container healthcheck hammers /api/health; never rate-limit it.
+    allowList: (req) => req.url === '/api/health',
+  });
+
+  // Don't leak internal error details (stack traces, upstream messages) to
+  // clients. Log everything server-side; return a generic body for 5xx and the
+  // original status for client errors (validation, 429, etc.).
+  app.setErrorHandler((error: FastifyError, req, reply) => {
+    req.log.error(error);
+    const status = error.statusCode ?? 500;
+    if (status >= 500) {
+      return reply.code(500).send({ error: 'internal_error' });
+    }
+    return reply.code(status).send({ error: error.code ?? 'request_error' });
   });
 
   app.get('/api/health', async () => ({ ok: true }));

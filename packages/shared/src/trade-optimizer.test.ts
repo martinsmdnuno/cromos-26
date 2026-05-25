@@ -17,8 +17,11 @@ test('giveable: ignores stickers I only own once', () => {
 });
 
 test('directTrade: bidirectional', () => {
+  // A has a duplicate of #1 and is missing #2; B is missing #1 and has a
+  // duplicate of #2. giveable only offers stickers the receiver is *missing*,
+  // so each side can give the other exactly one.
   const collections: MemberCollection[] = [
-    { userId: 'a', name: 'A', collection: { 1: 2, 2: 1 } },
+    { userId: 'a', name: 'A', collection: { 1: 2, 2: 0 } },
     { userId: 'b', name: 'B', collection: { 1: 0, 2: 2 } },
   ];
   const r = directTrade('a', 'b', collections);
@@ -42,18 +45,77 @@ test('optimizeTrades: balanced minimum', () => {
 });
 
 test('optimizeTrades: prefers higher score, surfaces user trades', () => {
-  // a-b can swap 1, a-c can swap 3, b-c can swap 2
+  // Three-way group where each pair can make a balanced swap:
+  //   a-c: 3 each (involves me, highest score)
+  //   b-c: 2 each (does NOT involve me)
+  //   a-b: 1 each (involves me)
+  // giveable only counts a giver's duplicates the receiver is *missing*, so each
+  // member owns single copies of the other pairs' gifts to keep the counts
+  // independent (a missing X = X flows in; a owning X = blocks that flow).
   const collections: MemberCollection[] = [
-    { userId: 'a', name: 'A', collection: { 1: 2, 10: 0, 20: 2, 21: 2, 22: 2, 30: 0, 31: 0 } },
-    { userId: 'b', name: 'B', collection: { 1: 0, 10: 2, 30: 2, 31: 2, 32: 2 } },
-    { userId: 'c', name: 'C', collection: { 20: 0, 21: 0, 22: 0, 32: 0 } },
+    {
+      userId: 'a',
+      name: 'A',
+      collection: {
+        201: 2,
+        202: 2,
+        203: 2, // a → c (3)
+        211: 2, //                 a → b (1)
+        221: 1,
+        222: 1, //         owns: blocks b → a
+        301: 0,
+        302: 0,
+        303: 0, // missing: receives from c
+        311: 0, //                 missing: receives from b
+        321: 1,
+        322: 1, //         owns: blocks c → a
+      },
+    },
+    {
+      userId: 'b',
+      name: 'B',
+      collection: {
+        311: 2, //                 b → a (1)
+        221: 2,
+        222: 2, //         b → c (2)
+        211: 0, //                 missing: receives from a
+        201: 1,
+        202: 1,
+        203: 1, // owns: blocks a → b
+        301: 1,
+        302: 1,
+        303: 1, // owns: blocks c → b
+        321: 0,
+        322: 0, //         missing: receives from c
+      },
+    },
+    {
+      userId: 'c',
+      name: 'C',
+      collection: {
+        301: 2,
+        302: 2,
+        303: 2, // c → a (3)
+        321: 2,
+        322: 2, //         c → b (2)
+        201: 0,
+        202: 0,
+        203: 0, // missing: receives from a
+        221: 0,
+        222: 0, //         missing: receives from b
+        211: 1, //                 owns: blocks a → c
+        311: 1, //                 owns: blocks b → c
+      },
+    },
   ];
   const r = optimizeTrades(collections, 'a');
-  // a-c (3 each) involves me; a-b (1 each) involves me; b-c (2 each) does not involve me.
-  // Order: my trades first by score desc, then non-my trades by score desc.
-  assert.ok(r.length >= 2);
+  // Order: my trades first by score desc (a-c=3, a-b=1), then non-my trades (b-c=2).
+  assert.equal(r.length, 3);
   assert.equal(r[0]!.involvesMe, true);
   assert.equal(r[0]!.count, 3); // a-c
+  assert.equal(r[1]!.count, 1); // a-b (also mine)
+  assert.equal(r[2]!.involvesMe, false); // b-c surfaces after my trades
+  assert.equal(r[2]!.count, 2);
 });
 
 test('optimizeTrades: drops zero-balanced pairs', () => {

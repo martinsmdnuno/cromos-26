@@ -28,7 +28,7 @@
     "build": "tsc",
     "dev": "tsc --watch --preserveWatchOutput",
     "typecheck": "tsc --noEmit",
-    "test": "node --test --import tsx 'src/*.test.ts' || true",
+    "test": "node --test --import tsx 'src/*.test.ts'",
     "lint": "echo 'no lint configured'",
     "clean": "rm -rf dist"
   },
