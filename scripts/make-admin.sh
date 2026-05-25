@@ -18,8 +18,11 @@ EMAIL="$1"
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
 ENV_FILE="${ENV_FILE:-.env.production}"
 
+# Pass the email as a psql variable so its value is safely quoted by psql
+# (`:'email'`) instead of being interpolated straight into the SQL string.
+# The heredoc delimiter is quoted so the shell leaves the `:'email'` refs alone.
 docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" exec -T db \
-  psql -U cromos -d cromos -v ON_ERROR_STOP=1 <<SQL
-UPDATE "User" SET "isAdmin" = TRUE WHERE LOWER(email) = LOWER('${EMAIL}');
-SELECT id, email, "isAdmin" FROM "User" WHERE LOWER(email) = LOWER('${EMAIL}');
+  psql -U cromos -d cromos -v ON_ERROR_STOP=1 -v email="$EMAIL" <<'SQL'
+UPDATE "User" SET "isAdmin" = TRUE WHERE LOWER(email) = LOWER(:'email');
+SELECT id, email, "isAdmin" FROM "User" WHERE LOWER(email) = LOWER(:'email');
 SQL

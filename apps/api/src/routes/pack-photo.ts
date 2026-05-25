@@ -70,6 +70,9 @@ export async function packPhotoRoutes(app: FastifyInstance) {
     {
       preHandler: requireAuth,
       bodyLimit: 6 * 1024 * 1024,
+      // Each call spends real money on the Anthropic API with our key — cap it
+      // hard per client so one account can't run up unbounded LLM cost.
+      config: { rateLimit: { max: 20, timeWindow: '1 hour' } },
     },
     async (req, reply) => {
       if (!env.ANTHROPIC_API_KEY) {

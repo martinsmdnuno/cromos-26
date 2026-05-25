@@ -40,6 +40,15 @@ stickers.martinsnuno.com {
 			path /assets/*
 		}
 		header @assets Cache-Control "public, max-age=31536000, immutable"
+
+		# Everything that isn't a hashed asset (index.html for every SPA route,
+		# the manifest, favicon, etc.) must always revalidate — otherwise the
+		# browser keeps serving a cached index.html that points at a deleted
+		# bundle after a deploy, and users see a stale or broken app.
+		@shell {
+			not path /assets/*
+		}
+		header @shell Cache-Control "no-cache, must-revalidate"
 	}
 
 	# Optional: enable an access log if you want to inspect traffic.

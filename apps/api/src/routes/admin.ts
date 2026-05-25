@@ -42,13 +42,7 @@ export async function adminRoutes(app: FastifyInstance) {
         .findMany({ where: { createdAt: { gte: monthStart }, userId: { not: null } }, select: { userId: true }, distinct: ['userId'] })
         .then((rows) => rows.length),
       prisma.event.count({ where: { createdAt: { gte: weekStart } } }),
-      // Feedback table may not exist on this branch yet (it's in a separate PR).
-      // Fall back to 0 instead of crashing the dashboard.
-      prisma.$queryRawUnsafe<{ count: bigint }[]>(
-        'SELECT COUNT(*)::bigint AS count FROM "Feedback"',
-      )
-        .then((rows) => Number(rows[0]?.count ?? 0))
-        .catch(() => 0),
+      prisma.feedback.count(),
     ]);
 
     return {
