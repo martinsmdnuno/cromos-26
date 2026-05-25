@@ -102,6 +102,13 @@ pnpm workspaces. Node 20. pnpm 9.12.0 (`packageManager` pinned).
 30. **`pnpm install --frozen-lockfile=false`** in CI because `pnpm-lock.yaml` may not always be in sync (especially after Claude edits dependencies). If you want stricter, regenerate the lockfile and switch to `--frozen-lockfile`.
 31. **Both jobs in `deploy.yml` (`build-and-test` + `deploy`) MUST pass `--env-file .env.production`** to docker compose. Without it, env vars become empty strings and the API boots with no JWT_SECRET.
 
+### Environment divergence (passes locally, breaks in CI/prod)
+
+> These both shipped green and only surfaced in CI/prod. When something "works on my machine," suspect Node version and the local-vs-prod env (`COOKIE_DOMAIN`, `NODE_ENV`).
+
+32. **`node --test '<glob>'` only self-expands the glob on Node 21+.** CI runs Node 20, so a *quoted* pattern (`'src/*.test.ts'`) reaches the test runner literally → `Could not find …`. Keep test-script globs **unquoted** (`node --test --import tsx src/*.test.ts`) so the shell expands them to explicit paths — works on every Node. This hid behind a `|| true` on the script AND a newer local Node that does expand globs. See `packages/shared`'s `test` script.
+33. **Logout must clear the auth cookie with the SAME `domain` it was set with.** Prod sets `cromos_token` with `Domain=<COOKIE_DOMAIN>`; a `clearCookie` that omits the domain emits a *host-only* deletion cookie, which the browser treats as a different cookie and never deletes → `/api/auth/me` keeps succeeding and the user is logged straight back in. Local dev (`COOKIE_DOMAIN=localhost` → no domain either side) always "works", hiding it. `set` and `clear` share one options helper in `apps/api/src/routes/auth.ts`; `google.ts` mirrors the same attributes.
+
 ## Common operations
 
 ```bash
