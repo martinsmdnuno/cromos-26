@@ -3,6 +3,10 @@ import clsx from 'clsx';
 import { categoryForSticker, PALETTE, stickerLabel } from '@cromos/shared';
 import { useT } from '../i18n/LangContext';
 
+// Team colors light enough to need dark text on top (yellow, green, teal).
+// Module-scoped so we don't allocate a fresh Set per tile on every render.
+const LIGHT_BG_COLORS = new Set(['#F4C430', '#6FBE44', '#2FB8AB']);
+
 /**
  * Split a sticker label into the small "team / section" prefix and the big
  * positional number, for the stacked-display tile layout. Sticker #1 is the
@@ -66,8 +70,7 @@ export const StickerTile = memo(function StickerTile({
   const isDup = count > 1;
 
   // contrast: yellow/green/teal = dark text, others = white
-  const lightBg = new Set(['#F4C430', '#6FBE44', '#2FB8AB']);
-  const textColor = lightBg.has(teamColor) ? '#1A1A1A' : '#FFFFFF';
+  const textColor = LIGHT_BG_COLORS.has(teamColor) ? '#1A1A1A' : '#FFFFFF';
 
   const longPressTimer = useRef<number | null>(null);
   // True once the long-press timer has fired and the modal opened. Used to
