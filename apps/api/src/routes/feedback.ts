@@ -60,7 +60,9 @@ async function tryForwardEmail(opts: {
 }
 
 export async function feedbackRoutes(app: FastifyInstance) {
-  app.post('/', { preHandler: requireAuth }, async (req, reply) => {
+  // Each submission fires an outbound email + a DB write — throttle it so a
+  // logged-in user can't flood the inbox or burn the Resend quota.
+  app.post('/', { preHandler: requireAuth, config: { rateLimit: { max: 5, timeWindow: '1 hour' } } }, async (req, reply) => {
     const parsed = feedbackSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: 'invalid_input' });
     const { message, page, contactOk = false } = parsed.data;
