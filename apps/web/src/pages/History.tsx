@@ -60,19 +60,23 @@ export function History() {
   });
 
   // Infinite-scroll: load more when the bottom sentinel scrolls into view.
+  // Depend only on the specific query fields we read — not the whole query
+  // object, whose identity changes every render and was tearing down and
+  // recreating the observer on each one.
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = q;
   useEffect(() => {
     const node = sentinelRef.current;
     if (!node) return;
     const io = new IntersectionObserver((entries) => {
       for (const e of entries) {
-        if (e.isIntersecting && q.hasNextPage && !q.isFetchingNextPage) {
-          q.fetchNextPage();
+        if (e.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
         }
       }
     });
     io.observe(node);
     return () => io.disconnect();
-  }, [q.hasNextPage, q.isFetchingNextPage, q.fetchNextPage, q]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const grouped = useMemo(() => {
     const all = (q.data?.pages ?? []).flatMap((p) => p.entries);
@@ -91,7 +95,11 @@ export function History() {
     const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
     if (key === today) return t('history.today');
     if (key === yesterday) return t('history.yesterday');
-    return new Date(key).toLocaleDateString(lang === 'pt' ? 'pt-PT' : 'en-US', {
+    // Parse the YYYY-MM-DD key as a *local* date. `new Date('2026-05-25')`
+    // would be UTC midnight, which toLocaleDateString then renders as the
+    // previous day in any negative-offset timezone.
+    const [y, m, d] = key.split('-').map(Number);
+    return new Date(y!, m! - 1, d!).toLocaleDateString(lang === 'pt' ? 'pt-PT' : 'en-US', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',

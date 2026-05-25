@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { Logo } from './Logo';
 import { BottomTabBar, TopTabBar } from './TabBar';
@@ -33,7 +34,11 @@ export function Layout() {
       </header>
 
       <main className="flex-1 max-w-[800px] mx-auto w-full pb-[calc(env(safe-area-inset-bottom)+96px)] md:pb-10">
-        <Outlet />
+        {/* Each route is a lazy chunk; keep the header + tab bar mounted and
+            show a light placeholder in the content area while it loads. */}
+        <Suspense fallback={<PageLoader />}>
+          <Outlet />
+        </Suspense>
       </main>
 
       <footer className="hidden md:flex justify-center gap-4 pt-4 pb-6 label-mono opacity-50">
@@ -51,6 +56,18 @@ export function Layout() {
 
       {/* Diagnostic overlay opt-in via `?debug=scroll`. Off in normal use. */}
       <ScrollDebugOverlay />
+    </div>
+  );
+}
+
+/** Lightweight placeholder shown in the content area while a route chunk loads. */
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center py-24" role="status" aria-live="polite">
+      <div className="num-display text-4xl tracking-tight opacity-60">
+        <span className="text-panini-red">2</span>
+        <span className="text-panini-blue">6</span>
+      </div>
     </div>
   );
 }

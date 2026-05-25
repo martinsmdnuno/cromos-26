@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CATEGORIES,
@@ -65,7 +65,14 @@ export function Collection() {
     queryFn: () => api.get<{ collection: Record<number, number> }>('/api/collection'),
     refetchInterval: 15_000, // simple polling for cross-device sync
   });
-  const collection: Record<number, number> = collectionQ.data?.collection ?? {};
+  // Keep a stable reference while the data is unchanged (React Query already
+  // structurally shares `data`), so the memoised sections/counts below — and
+  // the <CategorySection> memo — only recompute when the collection truly
+  // changes, not on every unrelated re-render.
+  const collection = useMemo<Record<number, number>>(
+    () => collectionQ.data?.collection ?? {},
+    [collectionQ.data],
+  );
 
   const initialPrefs = useMemo(loadPrefs, []);
   const [filter, setFilter] = useState<Filter>(initialPrefs.filter);
@@ -155,25 +162,41 @@ export function Collection() {
     };
   }, [collection]);
 
-  const matchesFilter = (n: number): boolean => {
-    const c = collection[n] ?? 0;
-    if (filter === 'owned') return c >= 1;
-    if (filter === 'missing') return c === 0;
-    if (filter === 'duplicates') return c >= 2;
-    // 'almost': category-level filter happens in `visibleCategories`; within those,
-    // surface only what is still missing — that's the actionable list.
-    if (filter === 'almost') return c === 0;
-    return true;
-  };
-
-  const matchesSearch = (n: number): boolean => stickerMatchesQuery(n, search);
-
   const visibleCategories = useMemo(() => {
     let cats = CATEGORIES;
     if (team) cats = cats.filter((c) => c.id === team);
     if (filter === 'almost') cats = cats.filter((c) => almostCategoryIds.has(c.id));
     return cats;
   }, [team, filter, almostCategoryIds]);
+
+  // Build the per-section sticker lists once per data/filter/search change
+  // instead of on every render. Each section's array keeps a stable identity
+  // across renders that don't touch these inputs (lock toggle, opening the
+  // pack/edit modal), which lets the memoised <CategorySection> bail out.
+  // 'almost': the category-level filter already happened in `visibleCategories`;
+  // within those we surface only what is still missing — the actionable list.
+  const sections = useMemo(() => {
+    const out: { cat: CategoryDef; stickers: number[] }[] = [];
+    for (const cat of visibleCategories) {
+      const stickers: number[] = [];
+      for (let n = cat.range[0]; n <= cat.range[1]; n++) {
+        const c = collection[n] ?? 0;
+        const passFilter =
+          filter === 'owned'
+            ? c >= 1
+            : filter === 'missing'
+              ? c === 0
+              : filter === 'duplicates'
+                ? c >= 2
+                : filter === 'almost'
+                  ? c === 0
+                  : true;
+        if (passFilter && stickerMatchesQuery(n, search)) stickers.push(n);
+      }
+      if (stickers.length > 0) out.push({ cat, stickers });
+    }
+    return out;
+  }, [visibleCategories, collection, filter, search]);
 
   // Stable tap / long-press callbacks — identity stays the same across renders so
   // <StickerTile memo> can skip re-renders for non-tapped tiles. Without this
@@ -330,25 +353,18 @@ export function Collection() {
 
       {/* Categories */}
       <div className="mt-4 space-y-5">
-        {visibleCategories.map((cat) => {
-          const stickers: number[] = [];
-          for (let n = cat.range[0]; n <= cat.range[1]; n++) {
-            if (matchesFilter(n) && matchesSearch(n)) stickers.push(n);
-          }
-          if (stickers.length === 0) return null;
-          return (
-            <CategorySection
-              key={cat.id}
-              cat={cat}
-              stickers={stickers}
-              collection={collection}
-              onTap={handleTap}
-              onLongPress={handleLongPress}
-              locked={locked}
-              onBlocked={handleBlocked}
-            />
-          );
-        })}
+        {sections.map(({ cat, stickers }) => (
+          <CategorySection
+            key={cat.id}
+            cat={cat}
+            stickers={stickers}
+            collection={collection}
+            onTap={handleTap}
+            onLongPress={handleLongPress}
+            locked={locked}
+            onBlocked={handleBlocked}
+          />
+        ))}
         {visibleCategories.length === 0 && (
           <p className="text-sm opacity-60 px-1">{t('collection.no_results')}</p>
         )}
@@ -394,7 +410,7 @@ function Stat({
   );
 }
 
-function CategorySection({
+const CategorySection = memo(function CategorySection({
   cat,
   stickers,
   collection,
@@ -454,4 +470,4 @@ function CategorySection({
       </div>
     </section>
   );
-}
+});
