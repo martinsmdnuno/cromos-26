@@ -17,6 +17,13 @@ const updateMeSchema = z.object({
   name: z.string().trim().min(1).max(60),
 });
 
+const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30d
+
+// Shared cookie attributes. setCookie and clearCookie MUST agree on domain +
+// path (and the flags), otherwise the browser treats the logout cookie as a
+// different cookie from the session one and never deletes it — so the user
+// stays logged in. In prod a `domain` is set, which is exactly what the old
+// logout (path-only) was missing.
 function cookieOptions() {
   return {
     httpOnly: true,
@@ -24,7 +31,6 @@ function cookieOptions() {
     sameSite: 'lax' as const,
     path: '/',
     domain: env.COOKIE_DOMAIN === 'localhost' ? undefined : env.COOKIE_DOMAIN,
-    maxAge: 60 * 60 * 24 * 30, // 30d
   };
 }
 
@@ -43,7 +49,7 @@ export async function authRoutes(app: FastifyInstance) {
       },
     });
     const token = app.jwt.sign({ sub: user.id });
-    reply.setCookie(COOKIE_NAME, token, cookieOptions());
+    reply.setCookie(COOKIE_NAME, token, { ...cookieOptions(), maxAge: SESSION_MAX_AGE });
     return { user: { id: user.id, email: user.email, name: user.name, isAdmin: user.isAdmin } };
   });
 
@@ -58,12 +64,13 @@ export async function authRoutes(app: FastifyInstance) {
     const ok = await verifyPassword(password, user.passwordHash);
     if (!ok) return reply.code(401).send({ error: 'invalid_credentials' });
     const token = app.jwt.sign({ sub: user.id });
-    reply.setCookie(COOKIE_NAME, token, cookieOptions());
+    reply.setCookie(COOKIE_NAME, token, { ...cookieOptions(), maxAge: SESSION_MAX_AGE });
     return { user: { id: user.id, email: user.email, name: user.name, isAdmin: user.isAdmin } };
   });
 
   app.post('/logout', async (_req, reply) => {
-    reply.clearCookie(COOKIE_NAME, { path: '/' });
+    // Same attributes as setCookie (esp. domain) so the browser actually deletes it.
+    reply.clearCookie(COOKIE_NAME, cookieOptions());
     return { ok: true };
   });
 
