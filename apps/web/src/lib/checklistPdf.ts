@@ -1,24 +1,29 @@
 import type { jsPDF } from 'jspdf';
 
-/** A section row ready to print: code (heading), resolved display name, missing positions. */
-export interface MissingPdfSection {
+/** A section row ready to print: code (heading), resolved display name, positions list. */
+export interface ChecklistSection {
   code: string;
   name: string;
   positions: string[];
 }
 
 /** All copy is pre-resolved/interpolated by the caller so this module stays i18n-agnostic. */
-export interface MissingPdfStrings {
+export interface ChecklistStrings {
   title: string;
   subtitle: string;
   footerNote: string;
   generatedOn: string;
   fileName: string;
+  /**
+   * Optional cross-sell line drawn as a yellow strip right above the footer.
+   * Used by the duplicates export to advertise the app on every shared PDF.
+   */
+  cta?: string;
 }
 
-export interface MissingPdfData {
-  sections: MissingPdfSection[];
-  strings: MissingPdfStrings;
+export interface ChecklistData {
+  sections: ChecklistSection[];
+  strings: ChecklistStrings;
 }
 
 // A4 portrait, millimetres. Tuned so a full 49-section album fits on a single page,
@@ -36,7 +41,15 @@ const ROW_H = 5.0;
 const LINE_H = 3.6;
 const BODY_TOP = 31;
 const FOOTER_BASELINE = PAGE_H - 8;
-const BODY_BOTTOM = PAGE_H - 13;
+// Cross-sell strip: a colored band right above the footer. Height fixed; layout
+// reserves space for it whenever `cta` is set so rows never collide with it.
+const CTA_H = 7;
+const CTA_GAP = 2;
+
+function bodyBottomFor(strings: ChecklistStrings): number {
+  // Above the footer line, plus the CTA strip + a small gap when present.
+  return strings.cta ? FOOTER_BASELINE - 5 - CTA_H - CTA_GAP : PAGE_H - 13;
+}
 
 function fittedNameSize(doc: jsPDF, name: string): number {
   doc.setFont('helvetica', 'normal');
@@ -49,7 +62,21 @@ function fittedNameSize(doc: jsPDF, name: string): number {
   return size;
 }
 
-function drawFooter(doc: jsPDF, strings: MissingPdfStrings): void {
+function drawCta(doc: jsPDF, cta: string): void {
+  const stripY = FOOTER_BASELINE - 5 - CTA_H;
+  // Panini yellow with a thin ink border, matching the in-app pill style.
+  doc.setFillColor(244, 196, 48);
+  doc.setDrawColor(26, 26, 26);
+  doc.setLineWidth(0.4);
+  doc.rect(MARGIN, stripY, CONTENT_W, CTA_H, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(26, 26, 26);
+  doc.text(cta, PAGE_W / 2, stripY + CTA_H / 2, { align: 'center', baseline: 'middle' });
+}
+
+function drawFooter(doc: jsPDF, strings: ChecklistStrings): void {
+  if (strings.cta) drawCta(doc, strings.cta);
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(7);
   doc.setTextColor(140, 140, 140);
@@ -58,14 +85,18 @@ function drawFooter(doc: jsPDF, strings: MissingPdfStrings): void {
 }
 
 /**
- * Build (but don't save) the missing-stickers checklist PDF. Returns the jsPDF doc so
- * callers can `.save()` in the browser or `.output()` it in a test. jsPDF is loaded
- * dynamically to keep it out of the main bundle until someone actually exports.
+ * Build (but don't save) the checklist PDF. Returns the jsPDF doc so callers can
+ * `.save()` in the browser or `.output()` it in a test. jsPDF is loaded dynamically
+ * so it stays out of the main bundle until someone actually exports.
+ *
+ * The same layout drives both "missing" and "duplicates" exports — only the strings
+ * change (and the optional yellow CTA strip the duplicates PDF uses to cross-sell).
  */
-export async function buildMissingPdf(data: MissingPdfData): Promise<jsPDF> {
+export async function buildChecklistPdf(data: ChecklistData): Promise<jsPDF> {
   const { jsPDF } = await import('jspdf');
   const { sections, strings } = data;
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const bodyBottom = bodyBottomFor(strings);
 
   // Header
   doc.setFont('helvetica', 'bold');
@@ -86,7 +117,7 @@ export async function buildMissingPdf(data: MissingPdfData): Promise<jsPDF> {
   let y = BODY_TOP;
   let zebra = false;
   for (const sec of sections) {
-    if (y + ROW_H > BODY_BOTTOM) {
+    if (y + ROW_H > bodyBottom) {
       drawFooter(doc, strings);
       doc.addPage();
       y = MARGIN + 4;
@@ -127,7 +158,7 @@ export async function buildMissingPdf(data: MissingPdfData): Promise<jsPDF> {
 }
 
 /** Build the checklist and trigger a browser download. */
-export async function downloadMissingPdf(data: MissingPdfData): Promise<void> {
-  const doc = await buildMissingPdf(data);
+export async function downloadChecklistPdf(data: ChecklistData): Promise<void> {
+  const doc = await buildChecklistPdf(data);
   doc.save(data.strings.fileName);
 }

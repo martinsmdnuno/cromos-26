@@ -228,6 +228,13 @@ export const en: Dict = {
   'pdf.generated_on': 'Generated on {date}',
   'pdf.filename': 'missing-stickers.pdf',
   'pdf.fwc_name': 'FIFA World Cup',
+  'stats.duplicates_count': 'DUPLICATES ({n})',
+  'stats.no_duplicates': 'None yet — keep opening packs!',
+  'pdf.dup_title': 'Duplicate stickers — Panini FIFA World Cup 26',
+  'pdf.dup_subtitle': '{total} duplicate stickers · {sections} sections · ordered by section (album order)',
+  'pdf.dup_footer_note': 'Duplicates available to trade. Number = position within the section.',
+  'pdf.dup_filename': 'duplicate-stickers.pdf',
+  'pdf.dup_cta': 'Build your album at stickers.martinsnuno.com',
 
   // Cross-sell — wc26 (sister app: predictions + betting pool).
   'cross.toolkit_label': 'YOUR WORLD CUP 2026 TOOLKIT',
@@ -509,6 +516,14 @@ export const pt: Dict = {
   'pdf.generated_on': 'Gerado a {date}',
   'pdf.filename': 'cromos-em-falta.pdf',
   'pdf.fwc_name': 'FIFA World Cup',
+  'stats.duplicates_count': 'REPETIDOS ({n})',
+  'stats.no_duplicates': 'Nenhum ainda — abre mais packs!',
+  'pdf.dup_title': 'Cromos repetidos — Panini FIFA World Cup 26',
+  'pdf.dup_subtitle':
+    '{total} cromos repetidos · {sections} seleções · ordenados por seleção (ordem do álbum)',
+  'pdf.dup_footer_note': 'Cromos repetidos disponíveis para troca. Número = posição do cromo no álbum.',
+  'pdf.dup_filename': 'cromos-repetidos.pdf',
+  'pdf.dup_cta': 'Faz a tua caderneta em stickers.martinsnuno.com',
 
   // Cross-sell — wc26.
   'cross.toolkit_label': 'O TEU TOOLKIT DO MUNDIAL 2026',
