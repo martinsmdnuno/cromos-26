@@ -16,13 +16,18 @@ export async function statsRoutes(app: FastifyInstance) {
     let total = 0;
     const ownedByCategory: Record<string, number> = {};
     const ownedSet = new Set<number>();
+    const duplicateNumbers: number[] = [];
 
     for (const r of rows) {
       ownedSet.add(r.stickerNumber);
       owned++;
       total += r.count;
-      if (r.count > 1) duplicates += r.count - 1;
+      if (r.count > 1) {
+        duplicates += r.count - 1;
+        duplicateNumbers.push(r.stickerNumber);
+      }
     }
+    duplicateNumbers.sort((a, b) => a - b);
 
     for (const c of CATEGORIES) {
       let n = 0;
@@ -49,6 +54,7 @@ export async function statsRoutes(app: FastifyInstance) {
         owned: ownedByCategory[c.id] ?? 0,
       })),
       missingNumbers: missing,
+      duplicateNumbers,
     };
   });
 }

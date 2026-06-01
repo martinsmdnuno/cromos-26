@@ -4,7 +4,7 @@ import { api } from '../api';
 import { groupMissingBySection, PALETTE, stickerLabel, type PaletteKey } from '@cromos/shared';
 import { Trophy } from '../components/Trophy';
 import { useT } from '../i18n/LangContext';
-import { downloadMissingPdf } from '../lib/missingPdf';
+import { downloadChecklistPdf } from '../lib/checklistPdf';
 
 interface StatsResponse {
   total: number;
@@ -22,6 +22,7 @@ interface StatsResponse {
     owned: number;
   }[];
   missingNumbers: number[];
+  duplicateNumbers: number[];
 }
 
 export function Stats() {
@@ -118,8 +119,35 @@ export function Stats() {
         })}
       </ul>
 
-      {/* Missing list (collapsible, copyable) */}
-      <MissingList numbers={s.missingNumbers} />
+      {/* Missing list (collapsible, copyable, exportable). */}
+      <ChecklistCard
+        numbers={s.missingNumbers}
+        accentClass="bg-panini-red"
+        countKey="stats.missing_count"
+        emptyKey="stats.complete"
+        pdf={{
+          titleKey: 'pdf.title',
+          subtitleKey: 'pdf.subtitle',
+          footerNoteKey: 'pdf.footer_note',
+          filenameKey: 'pdf.filename',
+        }}
+      />
+
+      {/* Duplicates list — same shape, plus a cross-sell CTA on the PDF so every
+          shared list advertises the app to the recipient. */}
+      <ChecklistCard
+        numbers={s.duplicateNumbers}
+        accentClass="bg-panini-yellow"
+        countKey="stats.duplicates_count"
+        emptyKey="stats.no_duplicates"
+        pdf={{
+          titleKey: 'pdf.dup_title',
+          subtitleKey: 'pdf.dup_subtitle',
+          footerNoteKey: 'pdf.dup_footer_note',
+          filenameKey: 'pdf.dup_filename',
+          ctaKey: 'pdf.dup_cta',
+        }}
+      />
 
       {/* Cross-sell: subtle footer card pointing to the sister app. Same dev,
           complementary need (predictions / betting pool vs sticker tracking). */}
@@ -164,7 +192,33 @@ function Block({
   );
 }
 
-function MissingList({ numbers }: { numbers: number[] }) {
+interface ChecklistPdfKeys {
+  titleKey: string;
+  subtitleKey: string;
+  footerNoteKey: string;
+  filenameKey: string;
+  /** Optional — when set, the PDF renders a yellow CTA strip above the footer. */
+  ctaKey?: string;
+}
+
+/**
+ * Reusable card for any "list of sticker numbers grouped by section" stat —
+ * Show list / Copy all / Export PDF. The missing list and the duplicates list
+ * both render through this; only the labels, accent colour, and PDF copy differ.
+ */
+function ChecklistCard({
+  numbers,
+  accentClass,
+  countKey,
+  emptyKey,
+  pdf,
+}: {
+  numbers: number[];
+  accentClass: string;
+  countKey: string;
+  emptyKey: string;
+  pdf: ChecklistPdfKeys;
+}) {
   const { t, lang } = useT();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -181,14 +235,15 @@ function MissingList({ numbers }: { numbers: number[] }) {
         positions: g.positions,
       }));
       const date = new Date().toLocaleDateString(lang === 'pt' ? 'pt-PT' : 'en-GB');
-      await downloadMissingPdf({
+      await downloadChecklistPdf({
         sections,
         strings: {
-          title: t('pdf.title'),
-          subtitle: t('pdf.subtitle', { total: numbers.length, sections: sections.length }),
-          footerNote: t('pdf.footer_note'),
+          title: t(pdf.titleKey),
+          subtitle: t(pdf.subtitleKey, { total: numbers.length, sections: sections.length }),
+          footerNote: t(pdf.footerNoteKey),
           generatedOn: t('pdf.generated_on', { date }),
-          fileName: t('pdf.filename'),
+          fileName: t(pdf.filenameKey),
+          ...(pdf.ctaKey ? { cta: t(pdf.ctaKey) } : {}),
         },
       });
     } catch {
@@ -201,10 +256,8 @@ function MissingList({ numbers }: { numbers: number[] }) {
   return (
     <section className="mt-5">
       <div className="flex items-center gap-2.5 pb-2">
-        <div className="w-1.5 h-5 rounded-sm bg-panini-red" />
-        <h2 className="font-display text-lg tracking-wide">
-          {t('stats.missing_count', { n: numbers.length })}
-        </h2>
+        <div className={`w-1.5 h-5 rounded-sm ${accentClass}`} />
+        <h2 className="font-display text-lg tracking-wide">{t(countKey, { n: numbers.length })}</h2>
       </div>
       <div className="card p-3">
         <div className="flex gap-2">
@@ -236,9 +289,9 @@ function MissingList({ numbers }: { numbers: number[] }) {
         {open && (
           <pre
             className="mt-3 font-mono text-[11px] whitespace-pre-wrap break-words bg-panini-cream border-2 border-panini-ink rounded-lg p-3 max-h-72 overflow-auto"
-            aria-label={t('stats.missing_count', { n: numbers.length })}
+            aria-label={t(countKey, { n: numbers.length })}
           >
-            {text || t('stats.complete')}
+            {text || t(emptyKey)}
           </pre>
         )}
       </div>

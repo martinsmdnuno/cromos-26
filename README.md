@@ -32,6 +32,8 @@ optimiser, and add a whole pack with one paste.
 - **Stats hero + missing list** — copy your missing numbers in one tap to share in a chat,
   or export them as a printable PDF checklist (grouped by section, in album order) to take
   to the kiosk.
+- **Duplicates list + shareable PDF** — same shape, but for the stickers you've got spare.
+  Hand the PDF to a friend at the schoolyard; it links back to the app so they can join in.
 - **Bilingual** — full Portuguese (PT-PT) and English. Auto-detects from browser locale.
 - **Google sign-in** — optional, alongside the email + password flow. JWT in an
   `httpOnly` cookie, no localStorage tokens.
