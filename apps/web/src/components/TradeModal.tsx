@@ -58,7 +58,12 @@ export function TradeModal({ initialGive, initialReceive, onClose }: Props) {
     queryKey: ['collection'],
     queryFn: () => api.get<{ collection: CollectionMap }>('/api/collection'),
   });
-  const collection: CollectionMap = collectionQ.data?.collection ?? {};
+  // Stabilise the identity so the preview useMemos below don't recompute every
+  // render (a fresh `{}` fallback would change deps on each pass).
+  const collection: CollectionMap = useMemo(
+    () => collectionQ.data?.collection ?? {},
+    [collectionQ.data],
+  );
 
   const [giveRaw, setGiveRaw] = useState(() => codesFromNumbers(initialGive));
   const [recvRaw, setRecvRaw] = useState(() => codesFromNumbers(initialReceive));
