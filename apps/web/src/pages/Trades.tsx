@@ -4,6 +4,7 @@ import { api } from '../api';
 import { categoryForSticker, stickerLabel } from '@cromos/shared';
 import { useAuth } from '../hooks/useAuth';
 import { useT } from '../i18n/LangContext';
+import { TradeModal } from '../components/TradeModal';
 
 interface GroupListItem {
   id: string;
@@ -32,6 +33,7 @@ export function Trades() {
   const { t } = useT();
   const [groupId, setGroupId] = useState<string | null>(null);
   const [otherId, setOtherId] = useState<string | null>(null);
+  const [tradeOpen, setTradeOpen] = useState(false);
 
   const groupsQ = useQuery({
     queryKey: ['groups'],
@@ -113,10 +115,27 @@ export function Trades() {
             numbers={directQ.data?.theyCanGive ?? []}
             color="#2FB8AB"
           />
+          {(directQ.data?.iCanGive.length ?? 0) + (directQ.data?.theyCanGive.length ?? 0) > 0 && (
+            <button
+              onClick={() => setTradeOpen(true)}
+              className="pill !bg-panini-red text-white !py-2.5 font-bold flex items-center justify-center gap-1.5"
+            >
+              <span aria-hidden="true">🔄</span>
+              <span>{t('trades.register')}</span>
+            </button>
+          )}
         </div>
       )}
 
       {!groupId && <p className="text-sm opacity-60 mt-6">{t('trades.pick_group_hint')}</p>}
+
+      {tradeOpen && (
+        <TradeModal
+          initialGive={directQ.data?.iCanGive ?? []}
+          initialReceive={directQ.data?.theyCanGive ?? []}
+          onClose={() => setTradeOpen(false)}
+        />
+      )}
     </div>
   );
 }

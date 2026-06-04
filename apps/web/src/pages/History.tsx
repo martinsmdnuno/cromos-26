@@ -30,6 +30,8 @@ function sourceEmoji(source: string): string {
       return '📦';
     case 'photo':
       return '📷';
+    case 'trade':
+      return '🔄';
     default:
       return '•';
   }
