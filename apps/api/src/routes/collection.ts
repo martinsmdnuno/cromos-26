@@ -13,7 +13,7 @@ const stickerNumberSchema = z.coerce.number().int().min(1).max(TOTAL_STICKERS);
  * generic icon for unknown values.
  */
 const sourceSchema = z
-  .enum(['tap', 'long_press', 'pack', 'photo', 'unknown'])
+  .enum(['tap', 'long_press', 'pack', 'photo', 'trade', 'unknown'])
   .optional()
   .default('unknown');
 

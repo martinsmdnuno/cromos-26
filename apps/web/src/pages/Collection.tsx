@@ -11,6 +11,7 @@ import { api } from '../api';
 import { StickerTile } from '../components/StickerTile';
 import { CountEditor } from '../components/CountEditor';
 import { PackModal } from '../components/PackModal';
+import { TradeModal } from '../components/TradeModal';
 import { track } from '../hooks/useTrack';
 import { useT } from '../i18n/LangContext';
 
@@ -80,6 +81,7 @@ export function Collection() {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<number | null>(null);
   const [packOpen, setPackOpen] = useState(false);
+  const [tradeOpen, setTradeOpen] = useState(false);
   const [locked, setLocked] = useState<boolean>(loadLocked);
   const [hintVisible, setHintVisible] = useState(false);
 
@@ -267,6 +269,16 @@ export function Collection() {
           <span>{t('collection.open_pack')}</span>
         </button>
         <button
+          onClick={() => {
+            track('trade.opened');
+            setTradeOpen(true);
+          }}
+          className="pill flex-1 !py-2 font-bold flex items-center justify-center gap-1.5"
+        >
+          <span aria-hidden="true">🔄</span>
+          <span>{t('collection.open_trade')}</span>
+        </button>
+        <button
           onClick={toggleLock}
           aria-pressed={locked}
           aria-label={locked ? t('collection.lock.unlock_aria') : t('collection.lock.lock_aria')}
@@ -385,6 +397,8 @@ export function Collection() {
       {packOpen && (
         <PackModal collection={collection} onClose={() => setPackOpen(false)} />
       )}
+
+      {tradeOpen && <TradeModal onClose={() => setTradeOpen(false)} />}
     </div>
   );
 }

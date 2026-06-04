@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { stickerLabel, type TradeSuggestion } from '@cromos/shared';
 import { api } from '../api';
 import { Avatar } from '../components/Avatar';
+import { TradeModal } from '../components/TradeModal';
 import { useAuth } from '../hooks/useAuth';
 import { useT } from '../i18n/LangContext';
 
@@ -263,8 +264,15 @@ function ShareButton({ code, groupName }: { code: string; groupName: string }) {
 
 function TradeCard({ trade }: { trade: TradeSuggestion }) {
   const { t } = useT();
+  const { user } = useAuth();
   const [expanded, setExpanded] = useState(false);
+  const [tradeOpen, setTradeOpen] = useState(false);
   const limit = 4;
+  // When I'm one of the two parties, work out which side's stickers I give vs
+  // receive so the modal can pre-fill correctly.
+  const iAmA = user?.id === trade.aId;
+  const myGive = iAmA ? trade.aGives : trade.bGives;
+  const myReceive = iAmA ? trade.bGives : trade.aGives;
   const aVisible = expanded ? trade.aGives : trade.aGives.slice(0, limit);
   const aRest = trade.aGives.length - aVisible.length;
   const bVisible = expanded ? trade.bGives : trade.bGives.slice(0, limit);
@@ -309,6 +317,22 @@ function TradeCard({ trade }: { trade: TradeSuggestion }) {
           t={t}
         />
       </div>
+      {trade.involvesMe && (
+        <button
+          onClick={() => setTradeOpen(true)}
+          className="w-full border-t-2 border-panini-ink bg-panini-red text-white py-2 font-bold text-sm flex items-center justify-center gap-1.5 hover:opacity-90"
+        >
+          <span aria-hidden="true">🔄</span>
+          <span>{t('trades.register')}</span>
+        </button>
+      )}
+      {tradeOpen && (
+        <TradeModal
+          initialGive={myGive}
+          initialReceive={myReceive}
+          onClose={() => setTradeOpen(false)}
+        />
+      )}
     </article>
   );
 }
