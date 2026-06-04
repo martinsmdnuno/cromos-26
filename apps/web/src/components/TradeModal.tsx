@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  extractStickerCodesFromOcr,
-  parseStickerList,
-  stickerLabel,
-  type CollectionMap,
-} from '@cromos/shared';
+import { parseStickerList, stickerLabel, type CollectionMap } from '@cromos/shared';
 import { api } from '../api';
+import { scanStickerPhoto } from '../lib/scanPhoto';
 import { useT } from '../i18n/LangContext';
 
 interface Props {
@@ -19,8 +15,8 @@ interface Props {
 
 type OcrPhase =
   | { kind: 'idle' }
-  | { kind: 'loading' }
-  | { kind: 'recognizing'; pct: number }
+  | { kind: 'uploading' }
+  | { kind: 'analyzing' }
   | { kind: 'error'; msg: string };
 
 /** Turn a list of sticker numbers into a space-separated label string for a textarea. */
@@ -150,29 +146,17 @@ export function TradeModal({ initialGive, initialReceive, onClose }: Props) {
   });
 
   const onPhoto = async (file: File) => {
-    setOcr({ kind: 'loading' });
+    setOcr({ kind: 'uploading' });
     try {
-      const { createWorker } = await import('tesseract.js');
-      const worker = await createWorker('eng', 1, {
-        logger: (m: { status: string; progress: number }) => {
-          if (m.status === 'recognizing text') {
-            setOcr({ kind: 'recognizing', pct: Math.round(m.progress * 100) });
-          }
-        },
-      });
-      await worker.setParameters({
-        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ',
-      });
-      const {
-        data: { text },
-      } = await worker.recognize(file);
-      await worker.terminate();
-      const extracted = extractStickerCodesFromOcr(text);
-      if (!extracted) {
+      const codes = await scanStickerPhoto(file, (phase) =>
+        setOcr(phase === 'uploading' ? { kind: 'uploading' } : { kind: 'analyzing' }),
+      );
+      if (!codes) {
         setOcr({ kind: 'error', msg: t('pack.photo_none_found') });
         return;
       }
-      setRecvRaw((prev) => (prev ? `${prev.replace(/\s+$/, '')} ${extracted} ` : `${extracted} `));
+      // Photo only ever feeds the "I receive" side — those are the new stickers.
+      setRecvRaw((prev) => (prev ? `${prev.replace(/\s+$/, '')} ${codes} ` : `${codes} `));
       setOcr({ kind: 'idle' });
     } catch (err) {
       console.error('[ocr]', err);
@@ -278,7 +262,6 @@ export function TradeModal({ initialGive, initialReceive, onClose }: Props) {
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
@@ -289,7 +272,7 @@ export function TradeModal({ initialGive, initialReceive, onClose }: Props) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={ocr.kind === 'loading' || ocr.kind === 'recognizing'}
+              disabled={ocr.kind === 'uploading' || ocr.kind === 'analyzing'}
               aria-label={t('pack.photo_aria')}
               title={t('pack.photo_title')}
               className="absolute right-2 top-2 w-9 h-9 rounded-full border-2 border-panini-ink flex items-center justify-center bg-white hover:bg-panini-cream disabled:opacity-50 transition-colors"
@@ -297,12 +280,12 @@ export function TradeModal({ initialGive, initialReceive, onClose }: Props) {
               <span aria-hidden="true">📷</span>
             </button>
           </div>
-          {ocr.kind === 'loading' && (
+          {ocr.kind === 'uploading' && (
             <div className="mt-2 label-mono opacity-70 italic" aria-live="polite">
               {t('pack.photo_uploading')}
             </div>
           )}
-          {ocr.kind === 'recognizing' && (
+          {ocr.kind === 'analyzing' && (
             <div className="mt-2 label-mono opacity-70 italic" aria-live="polite">
               {t('pack.photo_analyzing')}
             </div>
